@@ -1,0 +1,626 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1">
+<title>Nested Loops with Turtle</title>
+<style>
+  :root {
+    --bg: #f3f4f6; --panel: #ffffff; --ink: #111827; --muted: #6b7280; --line: #e5e7eb;
+    --dark: #1f2937; --accent: #2563eb; --tint-outer: #dbeafe; --tint-inner: #fef3c7;
+    --hl: #fde68a; --hl-border: #f59e0b;
+  }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; height: 100%; }
+  body {
+    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+    background: var(--bg); color: var(--ink); display: flex; flex-direction: column; min-height: 100vh;
+  }
+  header {
+    background: var(--dark); color: #fff; padding: 10px 18px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
+  }
+  header h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: .2px; }
+  header span { color: #cbd5e1; font-size: 13px; }
+  main { flex: 1; display: grid; grid-template-columns: 600px 1fr; gap: 14px; padding: 14px; min-height: 0; }
+  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } #view-wrap { min-height: 380px; } }
+  .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
+  .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
+  .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 8px; }
+
+  /* program picker */
+  .progs { display: flex; flex-wrap: wrap; gap: 6px; }
+  .progs .grp { width: 100%; font-size: 11px; color: var(--muted); margin-top: 4px; }
+  .progs button {
+    border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; color: var(--ink);
+  }
+  .progs button.on { background: var(--dark); color: #fff; border-color: var(--dark); }
+
+  /* code panels */
+  .codes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .code { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
+  .code .ttl { background: var(--dark); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 9px; }
+  .code pre { margin: 0; padding: 6px 0; overflow-x: auto; font: 11.5px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .ln { display: flex; padding: 0 8px 0 0; white-space: pre; }
+  .ln .n { width: 26px; text-align: right; color: #9ca3af; padding-right: 8px; flex: none; user-select: none; }
+  .ln .t { flex: 1; border-radius: 3px; padding: 0 4px; }
+  .ln.o .t { background: var(--tint-outer); }
+  .ln.i .t { background: var(--tint-inner); }
+  .ln.active .t { background: var(--hl); box-shadow: inset 3px 0 0 var(--hl-border); font-weight: 700; }
+  .ln.active .n { color: var(--hl-border); font-weight: 700; }
+
+  /* status */
+  .status { display: flex; flex-direction: column; gap: 6px; }
+  .badge { display: inline-block; font-size: 12px; font-weight: 600; color: #fff; background: #9ca3af; padding: 3px 9px; border-radius: 999px; }
+  .now { font: 600 14px ui-monospace, Menlo, Consolas, monospace; }
+  .explain { font-size: 13px; color: #374151; line-height: 1.45; }
+  .explain b { color: var(--ink); }
+  .vars { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
+  .var { font: 13px ui-monospace, Menlo, Consolas, monospace; background: #f3f4f6; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+  .var.changed { background: var(--hl); border-color: var(--hl-border); }
+  .counter { font-size: 12px; color: var(--muted); }
+
+  /* controls */
+  .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
+  .controls button {
+    border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; color: var(--ink);
+  }
+  .controls button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
+  .controls button:disabled { opacity: .45; cursor: default; }
+  .controls label { font-size: 12.5px; color: #374151; display: flex; align-items: center; gap: 6px; }
+  .controls input[type=range] { width: 110px; }
+  .legend { display: flex; gap: 8px; flex-wrap: wrap; font-size: 12px; color: #374151; margin-top: 8px; }
+  .chip { display: inline-flex; align-items: center; gap: 5px; }
+  .chip i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
+
+  /* 3D view */
+  #view-wrap { position: relative; min-height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #e5e7eb; }
+  #view { position: absolute; inset: 0; }
+  #view canvas { display: block; }
+  .viewbtns { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
+  .viewbtns button { border: 1px solid var(--line); background: rgba(255,255,255,.92); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
+  .veil {
+    position: absolute; inset: 0; background: rgba(31,41,55,.78); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
+    text-align: center; padding: 24px; gap: 14px; backdrop-filter: blur(3px);
+  }
+  .veil h3 { margin: 0; font-size: 20px; }
+  .veil p { margin: 0; max-width: 420px; color: #e5e7eb; line-height: 1.45; }
+  .veil button { background: #fff; color: var(--dark); border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 14px; cursor: pointer; }
+  .hint { position: absolute; left: 10px; bottom: 8px; font-size: 11px; color: #4b5563; background: rgba(255,255,255,.85); padding: 3px 7px; border-radius: 6px; }
+  .err { position: absolute; inset: 0; display: none; align-items: center; justify-content: center; padding: 20px; text-align: center; color: #991b1b; background: #fee2e2; }
+</style>
+</head>
+<body>
+<header>
+  <h1>Nested Loops with Turtle</h1>
+  <span>Watch the turtle move as each line runs — while loop on the left, for loop on the right.</span>
+</header>
+
+<main>
+  <div class="side">
+    <div class="card">
+      <h2>Program</h2>
+      <div class="progs" id="progs"></div>
+    </div>
+
+    <div class="card">
+      <div class="codes">
+        <div class="code"><div class="ttl">while version</div><pre id="codeW"></pre></div>
+        <div class="code"><div class="ttl">for version</div><pre id="codeF"></pre></div>
+      </div>
+      <div class="legend" id="legend"></div>
+    </div>
+
+    <div class="card status">
+      <div><span class="badge" id="badge">ready</span> <span class="counter" id="counter"></span></div>
+      <div class="now" id="now">Press ▶ Play or ⏭ Step.</div>
+      <div class="explain" id="explain"></div>
+      <div class="vars" id="vars"></div>
+    </div>
+
+    <div class="card">
+      <div class="controls">
+        <button id="btnReset" title="R">↺ Reset</button>
+        <button id="btnStep" title="→">⏭ Step</button>
+        <button id="btnPlay" class="primary" title="Space">▶ Play</button>
+        <button id="btnEnd">⏩ Finish</button>
+        <label>Speed <input type="range" id="speed" min="0.25" max="4" step="0.25" value="1"><span id="speedVal">1×</span></label>
+        <label><input type="checkbox" id="skipCtl"> Skip the start / check / step lines</label>
+      </div>
+    </div>
+  </div>
+
+  <div id="view-wrap">
+    <div id="view"></div>
+    <div class="viewbtns">
+      <button id="btnAngle">Angled view</button>
+      <button id="btnTop">Top view</button>
+    </div>
+    <div class="hint">Drag to orbit · scroll to zoom · right-drag to pan</div>
+    <div class="veil" id="veil" style="display:none">
+      <h3>Draw it first!</h3>
+      <p>Read the code, sketch what you think the turtle draws on your worksheet, then come back and check.</p>
+      <button id="btnReveal">Reveal the animation</button>
+    </div>
+    <div class="err" id="err">Could not load the 3D library (three.js). Check the internet connection and reload.</div>
+  </div>
+</main>
+
+<!-- three.js is loaded from a CDN, so the page needs an internet connection; everything else is in this one file. -->
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
+<script>
+(function () {
+  'use strict';
+  if (typeof THREE === 'undefined') { document.getElementById('err').style.display = 'flex'; return; }
+
+  // ---------------------------------------------------------------- programs
+  const PALETTE = ['#2563eb', '#ea580c', '#16a34a', '#9333ea', '#db2777', '#0891b2'];
+  const GREY = '#6b7280';
+  const colorOf = i => (i < 0 ? GREY : PALETTE[i % PALETTE.length]);
+
+  // w = line numbers in the while version, f = line numbers in the for version
+  const loop = (v, start, stop, w, f, body) => ({ type: 'loop', v, start, stop, w, f, body });
+  const cmd = (op, arg, w, f, text) => ({ type: 'cmd', op, arg, w, f, text });
+
+  const PROGRAMS = [
+    {
+      id: 'ex1', group: 'Examples', title: '1 · Square', nested: false,
+      whileCode: ['import turtle', 'side = 0', 'while side < 4:', '    turtle.forward(60)', '    turtle.left(90)', '    side = side + 1'],
+      forCode: ['import turtle', 'for side in range(4):', '    turtle.forward(60)', '    turtle.left(90)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'o', 5: 'o', 6: 'o' }, fTint: { 2: 'o', 3: 'o', 4: 'o' },
+      body: [loop('side', 0, 4, { init: 2, cond: 3, inc: 6 }, 2, [cmd('forward', 60, 4, 3), cmd('left', 90, 5, 4)])]
+    },
+    {
+      id: 'ex2', group: 'Examples', title: '2 · Row of squares', nested: true,
+      whileCode: ['import turtle', 'square = 0', 'while square < 3:', '    side = 0', '    while side < 4:',
+        '        turtle.forward(40)', '        turtle.left(90)', '        side = side + 1', '    turtle.forward(60)', '    square = square + 1'],
+      forCode: ['import turtle', 'for square in range(3):', '    for side in range(4):', '        turtle.forward(40)', '        turtle.left(90)', '    turtle.forward(60)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'i', 5: 'i', 6: 'i', 7: 'i', 8: 'i', 9: 'o', 10: 'o' }, fTint: { 2: 'o', 3: 'i', 4: 'i', 5: 'i', 6: 'o' },
+      body: [loop('square', 0, 3, { init: 2, cond: 3, inc: 10 }, 2, [
+        loop('side', 0, 4, { init: 4, cond: 5, inc: 8 }, 3, [cmd('forward', 40, 6, 4), cmd('left', 90, 7, 5)]),
+        cmd('forward', 60, 9, 6)])]
+    },
+    {
+      id: 'ex3', group: 'Examples', title: '3 · Spinning triangles', nested: true,
+      whileCode: ['import turtle', 'turn = 0', 'while turn < 3:', '    side = 0', '    while side < 3:',
+        '        turtle.forward(50)', '        turtle.left(120)', '        side = side + 1', '    turtle.left(120)', '    turn = turn + 1'],
+      forCode: ['import turtle', 'for turn in range(3):', '    for side in range(3):', '        turtle.forward(50)', '        turtle.left(120)', '    turtle.left(120)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'i', 5: 'i', 6: 'i', 7: 'i', 8: 'i', 9: 'o', 10: 'o' }, fTint: { 2: 'o', 3: 'i', 4: 'i', 5: 'i', 6: 'o' },
+      body: [loop('turn', 0, 3, { init: 2, cond: 3, inc: 10 }, 2, [
+        loop('side', 0, 3, { init: 4, cond: 5, inc: 8 }, 3, [cmd('forward', 50, 6, 4), cmd('left', 120, 7, 5)]),
+        cmd('left', 120, 9, 6)])]
+    },
+    {
+      id: 'q1', group: 'Exercises (draw first, then reveal)', title: 'Ex 1 · Row of triangles', nested: true, exercise: true,
+      whileCode: ['import turtle', 'shape = 0', 'while shape < 3:', '    side = 0', '    while side < 3:',
+        '        turtle.forward(40)', '        turtle.left(120)', '        side = side + 1', '    turtle.forward(60)', '    shape = shape + 1'],
+      forCode: ['import turtle', 'for shape in range(3):', '    for side in range(3):', '        turtle.forward(40)', '        turtle.left(120)', '    turtle.forward(60)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'i', 5: 'i', 6: 'i', 7: 'i', 8: 'i', 9: 'o', 10: 'o' }, fTint: { 2: 'o', 3: 'i', 4: 'i', 5: 'i', 6: 'o' },
+      body: [loop('shape', 0, 3, { init: 2, cond: 3, inc: 10 }, 2, [
+        loop('side', 0, 3, { init: 4, cond: 5, inc: 8 }, 3, [cmd('forward', 40, 6, 4), cmd('left', 120, 7, 5)]),
+        cmd('forward', 60, 9, 6)])]
+    },
+    {
+      id: 'q2', group: 'Exercises (draw first, then reveal)', title: 'Ex 2 · Windmill', nested: true, exercise: true,
+      whileCode: ['import turtle', 'turn = 0', 'while turn < 4:', '    side = 0', '    while side < 4:',
+        '        turtle.forward(40)', '        turtle.left(90)', '        side = side + 1', '    turtle.left(90)', '    turn = turn + 1'],
+      forCode: ['import turtle', 'for turn in range(4):', '    for side in range(4):', '        turtle.forward(40)', '        turtle.left(90)', '    turtle.left(90)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'i', 5: 'i', 6: 'i', 7: 'i', 8: 'i', 9: 'o', 10: 'o' }, fTint: { 2: 'o', 3: 'i', 4: 'i', 5: 'i', 6: 'o' },
+      body: [loop('turn', 0, 4, { init: 2, cond: 3, inc: 10 }, 2, [
+        loop('side', 0, 4, { init: 4, cond: 5, inc: 8 }, 3, [cmd('forward', 40, 6, 4), cmd('left', 90, 7, 5)]),
+        cmd('left', 90, 9, 6)])]
+    },
+    {
+      id: 'q3', group: 'Exercises (draw first, then reveal)', title: 'Ex 3 · Growing squares', nested: true, exercise: true,
+      whileCode: ['import turtle', 'size = 1', 'while size < 4:', '    side = 0', '    while side < 4:',
+        '        turtle.forward(size * 30)', '        turtle.left(90)', '        side = side + 1', '    size = size + 1'],
+      forCode: ['import turtle', 'for size in range(1, 4):', '    for side in range(4):', '        turtle.forward(size * 30)', '        turtle.left(90)'],
+      wTint: { 2: 'o', 3: 'o', 4: 'i', 5: 'i', 6: 'i', 7: 'i', 8: 'i', 9: 'o' }, fTint: { 2: 'o', 3: 'i', 4: 'i', 5: 'i' },
+      body: [loop('size', 1, 4, { init: 2, cond: 3, inc: 9 }, 2, [
+        loop('side', 0, 4, { init: 4, cond: 5, inc: 8 }, 3, [cmd('forward', v => v.size * 30, 6, 4, 'turtle.forward(size * 30)'), cmd('left', 90, 7, 5)])])]
+    }
+  ];
+
+  // ---------------------------------------------------------------- trace builder
+  function loopVars(stmts, acc) {
+    acc = acc || [];
+    for (const s of stmts) if (s.type === 'loop') { acc.push(s.v); loopVars(s.body, acc); }
+    return acc;
+  }
+
+  function buildTrace(prog) {
+    const ev = [];
+    let x = 0, y = 0, h = 0, turtleSteps = 0;
+    const vars = {};
+    const snap = () => Object.assign({}, vars);
+
+    function run(stmts, depth, outerIdx) {
+      for (const s of stmts) {
+        if (s.type === 'loop') {
+          const range = s.start === 0 ? `range(${s.stop})` : `range(${s.start}, ${s.stop})`;
+          vars[s.v] = s.start;
+          ev.push({ kind: 'ctl', w: s.w.init, f: s.f, vars: snap(), changed: s.v, outerIdx,
+            wText: `<b>${s.v} = ${s.start}</b> — START: the counter is created.`,
+            fText: `<b>for ${s.v} in ${range}:</b> — the for line creates ${s.v} and gives it its first value, ${s.start}.` });
+          let i = 0;
+          for (let v = s.start; v < s.stop; v++, i++) {
+            vars[s.v] = v;
+            ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), outerIdx,
+              wText: `<b>while ${s.v} < ${s.stop}:</b> — CHECK: ${v} < ${s.stop} is True, so run the body.`,
+              fText: `<b>for ${s.v} in ${range}:</b> — ${range} still has values, so run the body with ${s.v} = ${v}.` });
+            run(s.body, depth + 1, depth === 0 ? i : outerIdx);
+            vars[s.v] = v + 1;
+            ev.push({ kind: 'ctl', w: s.w.inc, f: s.f, vars: snap(), changed: s.v, outerIdx,
+              wText: `<b>${s.v} = ${s.v} + 1</b> — STEP: ${s.v} is now ${v + 1}.`,
+              fText: `<b>for ${s.v} in ${range}:</b> — back to the for line; it moves ${s.v} on by itself${v + 1 < s.stop ? ` (next value: ${v + 1})` : ''}.` });
+          }
+          ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), outerIdx, end: true,
+            wText: `<b>while ${s.v} < ${s.stop}:</b> — CHECK: ${s.stop} < ${s.stop} is False, so the loop ends.`,
+            fText: `<b>for ${s.v} in ${range}:</b> — ${range} has no values left, so the loop ends.` });
+          continue;
+        }
+        const arg = typeof s.arg === 'function' ? s.arg(vars) : s.arg;
+        const color = (depth === 1 && prog.nested) ? -1 : outerIdx;
+        const text = s.text ? `${s.text}   →   ${s.op}(${arg})` : `turtle.${s.op}(${arg})`;
+        turtleSteps++;
+        if (s.op === 'forward') {
+          const r = h * Math.PI / 180;
+          const nx = x + arg * Math.cos(r), ny = y + arg * Math.sin(r);
+          ev.push({ kind: 'forward', dist: arg, x0: x, y0: y, x1: nx, y1: ny, heading: h, color, w: s.w, f: s.f, vars: snap(), text, n: turtleSteps, outerIdx, depth });
+          x = nx; y = ny;
+        } else {
+          ev.push({ kind: 'left', deg: arg, h0: h, h1: h + arg, x, y, color, w: s.w, f: s.f, vars: snap(), text, n: turtleSteps, outerIdx, depth });
+          h += arg;
+        }
+      }
+    }
+    run(prog.body, 0, 0);
+    return { ev, turtleSteps };
+  }
+
+  function boundsOf(ev) {
+    let minX = 0, maxX = 0, minY = 0, maxY = 0;
+    for (const e of ev) {
+      if (e.kind === 'forward') {
+        minX = Math.min(minX, e.x0, e.x1); maxX = Math.max(maxX, e.x0, e.x1);
+        minY = Math.min(minY, e.y0, e.y1); maxY = Math.max(maxY, e.y0, e.y1);
+      }
+    }
+    return { minX, maxX, minY, maxY };
+  }
+
+  // ---------------------------------------------------------------- three.js scene
+  const wrap = document.getElementById('view-wrap');
+  const view = document.getElementById('view');
+  const renderer = new THREE.WebGLRenderer({ antialias: true });
+  renderer.setPixelRatio(Math.min(window.devicePixelRatio || 1, 2));
+  renderer.setClearColor(0xeef0f3);
+  renderer.shadowMap.enabled = true;
+  renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+  view.appendChild(renderer.domElement);
+
+  const scene = new THREE.Scene();
+  const camera = new THREE.PerspectiveCamera(38, 1, 5, 4000);
+  const controls = new THREE.OrbitControls(camera, renderer.domElement);
+  controls.enableDamping = true;
+  controls.dampingFactor = 0.08;
+  controls.maxPolarAngle = Math.PI / 2 - 0.04;
+
+  // graph paper: a repeating canvas texture (10 turtle steps per square, darker line every 50)
+  function makeGridTexture() {
+    const c = document.createElement('canvas'); c.width = c.height = 320;   // one tile = 50 x 50 steps
+    const g = c.getContext('2d');
+    g.fillStyle = '#ffffff'; g.fillRect(0, 0, 320, 320);
+    g.strokeStyle = '#e4e7eb'; g.lineWidth = 2;
+    for (let i = 1; i < 5; i++) { g.beginPath(); g.moveTo(i * 64, 0); g.lineTo(i * 64, 320); g.moveTo(0, i * 64); g.lineTo(320, i * 64); g.stroke(); }
+    g.strokeStyle = '#cdd2d9'; g.lineWidth = 3;
+    g.strokeRect(1.5, 1.5, 317, 317);
+    const tex = new THREE.CanvasTexture(c);
+    tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
+    tex.repeat.set(24, 24);
+    tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
+    return tex;
+  }
+  // unlit paper keeps the grid colours exact; a transparent shadow-catcher sits just above it
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshBasicMaterial({ map: makeGridTexture() }));
+  paper.rotation.x = -Math.PI / 2;
+  scene.add(paper);
+  const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.16 }));
+  shadowCatcher.rotation.x = -Math.PI / 2;
+  shadowCatcher.position.y = 0.05;
+  shadowCatcher.receiveShadow = true;
+  scene.add(shadowCatcher);
+
+  scene.add(new THREE.HemisphereLight(0xffffff, 0xb0b6c0, 0.55));
+  const sun = new THREE.DirectionalLight(0xffffff, 0.75);
+  sun.position.set(140, 300, 180);
+  sun.castShadow = true;
+  sun.shadow.mapSize.set(2048, 2048);
+  sun.shadow.camera.left = -300; sun.shadow.camera.right = 300;
+  sun.shadow.camera.top = 300; sun.shadow.camera.bottom = -300;
+  sun.shadow.camera.far = 1200;
+  scene.add(sun);
+
+  const marker = new THREE.Mesh(new THREE.RingGeometry(2.4, 3.8, 40), new THREE.MeshBasicMaterial({ color: 0x6b7280, side: THREE.DoubleSide }));
+  marker.rotation.x = -Math.PI / 2;
+  marker.position.y = 0.6;
+  scene.add(marker);
+
+  function makeTurtle() {
+    const g = new THREE.Group();
+    const shellMat = new THREE.MeshStandardMaterial({ color: 0x15803d, roughness: 0.55 });
+    const skinMat = new THREE.MeshStandardMaterial({ color: 0x4ade80, roughness: 0.75 });
+    const eyeMat = new THREE.MeshStandardMaterial({ color: 0x111827 });
+    const shell = new THREE.Mesh(new THREE.SphereGeometry(5.2, 32, 20), shellMat);
+    shell.scale.set(1.18, 0.55, 1); shell.position.y = 2.4; shell.castShadow = true; g.add(shell);
+    const rim = new THREE.Mesh(new THREE.CylinderGeometry(5.9, 5.9, 1.3, 32), skinMat);
+    rim.scale.set(1.18, 1, 1); rim.position.y = 1.5; rim.castShadow = true; g.add(rim);
+    const head = new THREE.Mesh(new THREE.SphereGeometry(2.3, 20, 14), skinMat);
+    head.position.set(7.2, 2.4, 0); head.castShadow = true; g.add(head);
+    for (const z of [-1.1, 1.1]) {
+      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), eyeMat);
+      eye.position.set(9.1, 3.1, z); g.add(eye);
+    }
+    for (const [sx, sz] of [[3.8, 5.0], [3.8, -5.0], [-3.8, 5.0], [-3.8, -5.0]]) {
+      const leg = new THREE.Mesh(new THREE.SphereGeometry(1.6, 12, 10), skinMat);
+      leg.position.set(sx, 1.2, sz); leg.castShadow = true; g.add(leg);
+    }
+    const tail = new THREE.Mesh(new THREE.ConeGeometry(1.1, 3.2, 10), skinMat);
+    tail.rotation.z = Math.PI / 2; tail.position.set(-7.2, 1.6, 0); g.add(tail);
+    // pen: a small dark dot under the turtle's centre
+    const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.2, 12), eyeMat);
+    pen.position.y = 0.6; g.add(pen);
+    return g;
+  }
+  const turtle = makeTurtle();
+  turtle.scale.setScalar(0.85);
+  scene.add(turtle);
+
+  const segGeo = new THREE.BoxGeometry(1, 1.5, 2.6);
+  segGeo.translate(0.5, 0, 0);
+  function makeSegment(e) {
+    const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(colorOf(e.color)), roughness: 0.45, emissive: new THREE.Color(colorOf(e.color)), emissiveIntensity: 0.35 });
+    const m = new THREE.Mesh(segGeo, mat);
+    m.position.set(e.x0, 0.75 + segMeshes.length * 0.03, -e.y0);   // later lines sit a hair higher so overlaps don't flicker
+    m.rotation.y = e.heading * Math.PI / 180;
+    m.scale.x = 0.001;
+    m.castShadow = true;
+    scene.add(m);
+    return m;
+  }
+
+  function setTurtle(x, y, h) {
+    turtle.position.set(x, 0, -y);
+    turtle.rotation.y = h * Math.PI / 180;
+  }
+
+  let fit = { cx: 0, cy: 0, ext: 120 };
+  function fitCamera(ev, angled) {
+    const b = boundsOf(ev);
+    const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
+    const ext = Math.max(b.maxX - b.minX, b.maxY - b.minY, 100) + 40;
+    fit = { cx, cy, ext };
+    controls.target.set(cx, 0, -cy);
+    if (angled) camera.position.set(cx, ext * 1.15, -cy + ext * 1.05);
+    else camera.position.set(cx, ext * 1.75, -cy + 0.5);
+    controls.update();
+  }
+
+  function resize() {
+    const w = wrap.clientWidth, h = wrap.clientHeight;
+    renderer.setSize(w, h, false);
+    renderer.domElement.style.width = w + 'px';
+    renderer.domElement.style.height = h + 'px';
+    camera.aspect = w / h;
+    camera.updateProjectionMatrix();
+  }
+  new ResizeObserver(resize).observe(wrap);
+  resize();
+
+  // ---------------------------------------------------------------- UI
+  const $ = id => document.getElementById(id);
+  const codeW = $('codeW'), codeF = $('codeF'), progsEl = $('progs'), legendEl = $('legend');
+  const badge = $('badge'), counter = $('counter'), nowEl = $('now'), explain = $('explain'), varsEl = $('vars');
+  const btnReset = $('btnReset'), btnStep = $('btnStep'), btnPlay = $('btnPlay'), btnEnd = $('btnEnd');
+  const speedEl = $('speed'), speedVal = $('speedVal'), skipCtlEl = $('skipCtl'), veil = $('veil');
+
+  let prog = null, trace = [], totalTurtle = 0, varNames = [];
+  let idx = 0, cur = null, progress = 0, playing = false, stepOnce = false, speed = 1;
+  let segMeshes = [], revealed = false;
+
+  function renderCode(el, lines, tints) {
+    el.innerHTML = lines.map((t, i) => {
+      const n = i + 1, cls = tints[n] ? ' ' + tints[n] : '';
+      return `<div class="ln${cls}" data-n="${n}"><span class="n">${n}</span><span class="t">${t.replace(/</g, '&lt;')}</span></div>`;
+    }).join('');
+  }
+
+  function highlight(e) {
+    for (const d of codeW.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.w);
+    for (const d of codeF.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.f);
+  }
+
+  function renderVars(vars, changed) {
+    varsEl.innerHTML = varNames.map(v => {
+      const has = vars && v in vars;
+      return `<span class="var${changed === v ? ' changed' : ''}">${v} = ${has ? vars[v] : '—'}</span>`;
+    }).join('');
+  }
+
+  function renderLegend() {
+    const outer = varNames[0];
+    const outerLoop = prog.body.find(s => s.type === 'loop');
+    const n = outerLoop.stop - outerLoop.start;
+    let html = '';
+    for (let i = 0; i < n; i++) html += `<span class="chip"><i style="background:${colorOf(i)}"></i>${outer} = ${outerLoop.start + i}</span>`;
+    if (prog.nested) html += `<span class="chip"><i style="background:${GREY}"></i>outer loop only</span>`;
+    html += `<span class="chip"><i style="background:var(--tint-outer)"></i>outer loop line</span>`;
+    if (prog.nested) html += `<span class="chip"><i style="background:var(--tint-inner)"></i>inner loop line</span>`;
+    legendEl.innerHTML = html;
+  }
+
+  function describe(e) {
+    if (!e) return;
+    badge.style.background = e.kind === 'ctl' ? '#9ca3af' : colorOf(e.color);
+    if (e.kind === 'ctl') {
+      badge.textContent = 'loop bookkeeping';
+      nowEl.textContent = `while line ${e.w}  ·  for line ${e.f}`;
+      explain.innerHTML = `<div><b>while:</b> ${e.wText}</div><div><b>for:</b> ${e.fText}</div>`;
+    } else {
+      const vs = Object.entries(e.vars).map(([k, v]) => `${k} = ${v}`).join(' · ');
+      badge.textContent = vs || 'turtle';
+      nowEl.textContent = e.text;
+      const where = e.depth >= 2 ? 'inside the <b>inner</b> loop' : (prog.nested ? 'in the <b>outer</b> loop (after the inner loop finished)' : 'inside the loop');
+      explain.innerHTML = e.kind === 'forward'
+        ? `Turtle step ${e.n}: draws a line ${e.dist} steps long — this line is ${where}. (while line ${e.w} · for line ${e.f})`
+        : `Turtle step ${e.n}: turns ${e.deg}° anticlockwise, no line drawn — ${where}. (while line ${e.w} · for line ${e.f})`;
+    }
+    renderVars(e.vars, e.changed);
+    counter.textContent = `turtle step ${lastTurtleStep()} of ${totalTurtle}  ·  line ${idx + 1} of ${trace.length} executed`;
+  }
+
+  function lastTurtleStep() {
+    for (let i = Math.min(idx, trace.length - 1); i >= 0; i--) if (trace[i].n) return trace[i].n;
+    return 0;
+  }
+
+  function setPlayBtn() { btnPlay.textContent = playing && !stepOnce ? '⏸ Pause' : '▶ Play'; }
+
+  function setControls(enabled) {
+    for (const b of [btnReset, btnStep, btnPlay, btnEnd]) b.disabled = !enabled;
+  }
+
+  // ---------------------------------------------------------------- animation
+  function startEvent() {
+    cur = trace[idx]; progress = 0;
+    if (cur.kind === 'forward') { cur.mesh = makeSegment(cur); segMeshes.push(cur.mesh); cur.dur = 260 + cur.dist * 9; }
+    else if (cur.kind === 'left') cur.dur = 220 + cur.deg * 3.2;
+    else cur.dur = skipCtlEl.checked ? 0 : 520;
+    highlight(cur);
+    describe(cur);
+  }
+
+  function applyProgress(e, p) {
+    if (e.kind === 'forward') {
+      const t = p < 1 ? (1 - Math.pow(1 - p, 2)) : 1;
+      e.mesh.scale.x = Math.max(0.001, e.dist * t);
+      setTurtle(e.x0 + (e.x1 - e.x0) * t, e.y0 + (e.y1 - e.y0) * t, e.heading);
+    } else if (e.kind === 'left') {
+      const t = p < 1 ? (1 - Math.pow(1 - p, 2)) : 1;
+      setTurtle(e.x, e.y, e.h0 + (e.h1 - e.h0) * t);
+    }
+  }
+
+  function finalize(e) {
+    if (e.kind === 'forward') { e.mesh.material.emissiveIntensity = 0.0; }
+    if (e.kind === 'forward') setTurtle(e.x1, e.y1, e.heading);
+    if (e.kind === 'left') setTurtle(e.x, e.y, e.h1);
+  }
+
+  function finishedAll() {
+    playing = false; stepOnce = false; setPlayBtn();
+    highlight(null);
+    badge.style.background = '#16a34a';
+    badge.textContent = 'done';
+    nowEl.textContent = 'Program finished.';
+    explain.innerHTML = `The turtle ran <b>${totalTurtle}</b> turtle commands in total. Press ↺ Reset to watch again, or pick another program.`;
+    counter.textContent = `turtle step ${totalTurtle} of ${totalTurtle}`;
+  }
+
+  let last = performance.now();
+  function animate(now) {
+    requestAnimationFrame(animate);
+    const dt = Math.min(now - last, 100); last = now;
+    if (playing) {
+      if (!cur) { if (idx < trace.length) startEvent(); else finishedAll(); }
+      if (cur) {
+        progress = Math.min(1, progress + dt * speed / Math.max(cur.dur, 1));
+        applyProgress(cur, progress);
+        if (progress >= 1) {
+          const e = cur; finalize(e); cur = null; idx++;
+          if (idx >= trace.length) finishedAll();
+          else if (stepOnce && !(skipCtlEl.checked && e.kind === 'ctl')) { stepOnce = false; playing = false; setPlayBtn(); }
+        }
+      }
+    }
+    controls.update();
+    renderer.render(scene, camera);
+  }
+  requestAnimationFrame(animate);
+
+  function reset() {
+    playing = false; stepOnce = false; cur = null; idx = 0; progress = 0;
+    for (const m of segMeshes) { scene.remove(m); m.material.dispose(); }
+    segMeshes = [];
+    setTurtle(0, 0, 0);
+    highlight(null);
+    badge.style.background = '#9ca3af'; badge.textContent = 'ready';
+    nowEl.textContent = 'Press ▶ Play to run, or ⏭ Step to go one line at a time.';
+    explain.innerHTML = prog.nested
+      ? 'Watch how the <b>inner</b> loop runs all the way through every single time the <b>outer</b> loop goes round once.'
+      : 'Both versions do exactly the same thing. The for line does the START, CHECK and STEP jobs of the while loop by itself.';
+    renderVars({}, null);
+    counter.textContent = `turtle step 0 of ${totalTurtle}`;
+    setPlayBtn();
+  }
+
+  function runToEnd() {
+    if (cur) { applyProgress(cur, 1); finalize(cur); cur = null; idx++; }
+    while (idx < trace.length) { startEvent(); applyProgress(cur, 1); finalize(cur); cur = null; idx++; }
+    finishedAll();
+  }
+
+  function selectProgram(p) {
+    prog = p;
+    const t = buildTrace(p);
+    trace = t.ev; totalTurtle = t.turtleSteps; varNames = loopVars(p.body);
+    for (const b of progsEl.querySelectorAll('button')) b.classList.toggle('on', b.dataset.id === p.id);
+    renderCode(codeW, p.whileCode, p.wTint);
+    renderCode(codeF, p.forCode, p.fTint);
+    renderLegend();
+    reset();
+    fitCamera(trace, true);
+    revealed = !p.exercise;
+    veil.style.display = revealed ? 'none' : 'flex';
+    setControls(revealed);
+    location.hash = p.id;
+  }
+
+  // program buttons
+  let lastGroup = null;
+  for (const p of PROGRAMS) {
+    if (p.group !== lastGroup) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = p.group; progsEl.appendChild(g); lastGroup = p.group; }
+    const b = document.createElement('button'); b.textContent = p.title; b.dataset.id = p.id;
+    b.addEventListener('click', () => selectProgram(p));
+    progsEl.appendChild(b);
+  }
+
+  btnReset.addEventListener('click', reset);
+  btnStep.addEventListener('click', () => {
+    if (idx >= trace.length && !cur) return;
+    stepOnce = true; playing = true; setPlayBtn();
+  });
+  btnPlay.addEventListener('click', () => {
+    if (idx >= trace.length && !cur) { reset(); }
+    stepOnce = false; playing = !playing; setPlayBtn();
+  });
+  btnEnd.addEventListener('click', runToEnd);
+  speedEl.addEventListener('input', () => { speed = +speedEl.value; speedVal.textContent = speed + '×'; });
+  $('btnAngle').addEventListener('click', () => fitCamera(trace, true));
+  $('btnTop').addEventListener('click', () => fitCamera(trace, false));
+  $('btnReveal').addEventListener('click', () => { revealed = true; veil.style.display = 'none'; setControls(true); });
+
+  document.addEventListener('keydown', e => {
+    if (e.target.tagName === 'INPUT') return;
+    if (!revealed) return;
+    if (e.code === 'Space') { e.preventDefault(); btnPlay.click(); }
+    else if (e.code === 'ArrowRight') { e.preventDefault(); btnStep.click(); }
+    else if (e.key === 'r' || e.key === 'R') reset();
+  });
+
+  const start = PROGRAMS.find(p => '#' + p.id === location.hash) || PROGRAMS[0];
+  selectProgram(start);
+})();
+</script>
+</body>
+</html>
