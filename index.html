@@ -8,38 +8,39 @@
   :root {
     --bg: #f3f4f6; --panel: #ffffff; --ink: #111827; --muted: #6b7280; --line: #e5e7eb;
     --dark: #1f2937; --accent: #2563eb; --tint-outer: #dbeafe; --tint-inner: #fef3c7;
-    --hl: #fde68a; --hl-border: #f59e0b;
+    --hl: #fde68a; --hl-border: #f59e0b; --err: #fecaca; --err-border: #dc2626;
+    --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
   }
   * { box-sizing: border-box; }
   html, body { margin: 0; height: 100%; }
-  body {
-    font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
-    background: var(--bg); color: var(--ink); display: flex; flex-direction: column; min-height: 100vh;
-  }
-  header {
-    background: var(--dark); color: #fff; padding: 10px 18px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap;
-  }
+  body { font-family: system-ui, -apple-system, "Segoe UI", Roboto, Helvetica, Arial, sans-serif; background: var(--bg); color: var(--ink); display: flex; flex-direction: column; min-height: 100vh; }
+  header { background: var(--dark); color: #fff; padding: 10px 18px; display: flex; align-items: baseline; gap: 14px; flex-wrap: wrap; }
   header h1 { font-size: 18px; margin: 0; font-weight: 700; letter-spacing: .2px; }
   header span { color: #cbd5e1; font-size: 13px; }
-  main { flex: 1; display: grid; grid-template-columns: 600px 1fr; gap: 14px; padding: 14px; min-height: 0; }
-  @media (max-width: 1100px) { main { grid-template-columns: 1fr; } #view-wrap { min-height: 380px; } }
+  main { flex: 1; display: grid; grid-template-columns: 660px 1fr; gap: 14px; padding: 14px; min-height: 0; }
+  @media (max-width: 1150px) { main { grid-template-columns: 1fr; } #view-wrap { min-height: 380px; } }
   .side { display: flex; flex-direction: column; gap: 12px; min-width: 0; }
   .card { background: var(--panel); border: 1px solid var(--line); border-radius: 10px; padding: 12px; }
   .card h2 { font-size: 12px; text-transform: uppercase; letter-spacing: .6px; color: var(--muted); margin: 0 0 8px; }
 
-  /* program picker */
+  .tabs { display: flex; gap: 4px; border-bottom: 1px solid var(--line); margin: -12px -12px 12px; padding: 6px 10px 0; }
+  .tabs button { border: 0; background: transparent; padding: 8px 10px; font-size: 13.5px; font-weight: 600; color: var(--muted); cursor: pointer; border-bottom: 3px solid transparent; margin-bottom: -1px; white-space: nowrap; }
+  .tabs button.on { color: var(--ink); border-bottom-color: var(--accent); }
+  .pane { display: none; }
+  .pane.on { display: block; }
+
   .progs { display: flex; flex-wrap: wrap; gap: 6px; }
   .progs .grp { width: 100%; font-size: 11px; color: var(--muted); margin-top: 4px; }
-  .progs button {
-    border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; color: var(--ink);
-  }
+  .progs button { border: 1px solid var(--line); background: #fff; border-radius: 999px; padding: 5px 11px; font-size: 13px; cursor: pointer; color: var(--ink); }
   .progs button.on { background: var(--dark); color: #fff; border-color: var(--dark); }
 
-  /* code panels */
-  .codes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; }
+  .codes { display: grid; grid-template-columns: 1fr 1fr; gap: 10px; margin-top: 12px; }
+  .codes.single { grid-template-columns: 1fr; }
+  .codes.single .code pre { max-height: 360px; overflow: auto; }
+  .codes.single #codeFwrap { display: none; }
   .code { border: 1px solid var(--line); border-radius: 8px; overflow: hidden; background: #fff; }
   .code .ttl { background: var(--dark); color: #fff; font-size: 12px; font-weight: 600; padding: 5px 9px; }
-  .code pre { margin: 0; padding: 6px 0; overflow-x: auto; font: 11.5px/1.65 ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace; }
+  .code pre { margin: 0; padding: 6px 0; overflow-x: auto; font: 12px/1.65 var(--mono); }
   .ln { display: flex; padding: 0 8px 0 0; white-space: pre; }
   .ln .n { width: 26px; text-align: right; color: #9ca3af; padding-right: 8px; flex: none; user-select: none; }
   .ln .t { flex: 1; border-radius: 3px; padding: 0 4px; }
@@ -47,23 +48,67 @@
   .ln.i .t { background: var(--tint-inner); }
   .ln.active .t { background: var(--hl); box-shadow: inset 3px 0 0 var(--hl-border); font-weight: 700; }
   .ln.active .n { color: var(--hl-border); font-weight: 700; }
+  .ln.error .t { background: var(--err); box-shadow: inset 3px 0 0 var(--err-border); }
 
-  /* status */
+  /* editor + reference */
+  .toolbar { display: flex; flex-wrap: wrap; gap: 6px; align-items: center; margin-bottom: 8px; }
+  .toolbar button, .toolbar select, .toolbar input[type=text] { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 6px 10px; font-size: 13px; cursor: pointer; color: var(--ink); }
+  .toolbar input[type=text] { cursor: text; width: 140px; font-family: var(--mono); font-size: 12.5px; }
+  .toolbar button.run { background: #16a34a; border-color: #16a34a; color: #fff; font-weight: 600; }
+  .toolbar .sp { flex: 1; }
+  .engine { font-size: 11.5px; color: var(--muted); display: inline-flex; align-items: center; gap: 6px; }
+  .engine i { width: 8px; height: 8px; border-radius: 50%; background: #d1d5db; display: inline-block; flex: none; }
+  .engine.ok i { background: #16a34a; } .engine.loading i { background: #f59e0b; } .engine.basic i { background: #6b7280; }
+  .engine select { font-size: 11.5px; padding: 3px 6px; }
+  .codearea { display: grid; grid-template-columns: 1fr 190px; gap: 8px; }
+  /* VS Code-style token colours: Dark+ and Light+ palettes */
+  .hl-dark { --tk-bg: #1e1e1e; --tk-fg: #d4d4d4; --tk-k: #569cd6; --tk-kc: #c586c0; --tk-c: #6a9955; --tk-s: #ce9178; --tk-n: #b5cea8; --tk-f: #dcdcaa; --tk-v: #9cdcfe; --tk-m: #4ec9b0; --tk-gut: #858585; --tk-gutbg: #1e1e1e; --tk-line: #333; --tk-caret: #fff; --tk-sel: rgba(38,79,120,.95); --tk-hl: rgba(253,230,138,.32); --tk-err: rgba(220,38,38,.38); }
+  .hl-light { --tk-bg: #ffffff; --tk-fg: #1f2937; --tk-k: #0000ff; --tk-kc: #af00db; --tk-c: #008000; --tk-s: #a31515; --tk-n: #098658; --tk-f: #795e26; --tk-v: #001080; --tk-m: #267f99; --tk-gut: #9ca3af; --tk-gutbg: #f3f4f6; --tk-line: #e5e7eb; --tk-caret: #111827; --tk-sel: rgba(173,214,255,.9); --tk-hl: #fde68a; --tk-err: #fecaca; }
+  .tok-k { color: var(--tk-k); } .tok-kc { color: var(--tk-kc); } .tok-c { color: var(--tk-c); font-style: italic; } .tok-s { color: var(--tk-s); }
+  .tok-n { color: var(--tk-n); } .tok-f { color: var(--tk-f); } .tok-v { color: var(--tk-v); } .tok-m { color: var(--tk-m); }
+  .code pre { background: var(--tk-bg); color: var(--tk-fg); }
+
+  .editor { position: relative; display: flex; border: 1px solid var(--tk-line); border-radius: 8px; overflow: hidden; background: var(--tk-bg); height: 380px; }
+  .gutter { width: 36px; flex: none; background: var(--tk-gutbg); color: var(--tk-gut); text-align: right; padding: 8px 6px 8px 0; font: 13px/1.6 var(--mono); overflow: hidden; user-select: none; border-right: 1px solid var(--tk-line); white-space: pre; }
+  .edwrap { position: relative; flex: 1; min-width: 0; }
+  .backdrop { position: absolute; inset: 0; padding: 8px 10px; font: 13px/1.6 var(--mono); pointer-events: none; overflow: hidden; white-space: pre; color: var(--tk-fg); }
+  .backdrop div { min-height: 1.6em; }
+  .backdrop div.active { background: var(--tk-hl); box-shadow: inset 3px 0 0 var(--hl-border); }
+  .backdrop div.error { background: var(--tk-err); box-shadow: inset 3px 0 0 var(--err-border); }
+  .editor textarea { position: absolute; inset: 0; width: 100%; height: 100%; padding: 8px 10px; margin: 0; font: 13px/1.6 var(--mono); color: transparent; -webkit-text-fill-color: transparent; caret-color: var(--tk-caret); background: transparent; border: 0; resize: none; outline: none; white-space: pre; overflow: auto; tab-size: 4; }
+  .editor textarea::selection { background: var(--tk-sel); }
+  .ref { border: 1px solid var(--line); border-radius: 8px; background: #fafafa; height: 380px; overflow-y: auto; padding: 6px 6px 8px; font-size: 12px; }
+  .ref .rh { font-size: 10.5px; text-transform: uppercase; letter-spacing: .5px; color: var(--muted); margin: 8px 4px 3px; }
+  .ref .cap { font-size: 10.5px; color: var(--muted); margin: 0 4px 6px; line-height: 1.3; }
+  .ref button { display: block; width: 100%; text-align: left; border: 1px solid transparent; background: #fff; border-radius: 6px; padding: 3px 6px; margin: 2px 0; font: 11.5px var(--mono); color: var(--ink); cursor: pointer; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+  .ref button:hover, .ref button:focus { border-color: var(--accent); background: #eff6ff; outline: none; }
+  .ref button.adv { color: #6d28d9; }
+  #tip { position: fixed; z-index: 50; width: 300px; background: #1f2937; color: #f9fafb; border-radius: 10px; padding: 10px 12px; font-size: 12.5px; line-height: 1.45; box-shadow: 0 10px 30px rgba(0,0,0,.25); display: none; pointer-events: none; }
+  #tip .sig { font: 600 13px var(--mono); color: #fde68a; margin-bottom: 4px; }
+  #tip pre { margin: 8px 0 0; background: #111827; border-radius: 6px; padding: 7px 9px; font: 12px/1.5 var(--mono); color: #d1fae5; white-space: pre; overflow: hidden; }
+  #tip .note { color: #c4b5fd; margin-top: 6px; font-size: 11.5px; }
+  #tip .click { color: #9ca3af; margin-top: 6px; font-size: 11px; }
+
+  /* console (IDLE-style) */
+  .console { margin-top: 8px; font: 12.5px/1.5 var(--mono); background: #111827; color: #e5e7eb; border-radius: 8px; padding: 8px 10px; min-height: 48px; max-height: 150px; overflow: auto; white-space: pre-wrap; }
+  .console .e { color: #fca5a5; }
+  .console .d { color: #9ca3af; }
+  .console .in { color: #93c5fd; }
+  .console .inrow { display: flex; align-items: baseline; }
+  .console .inrow input { flex: 1; min-width: 60px; background: transparent; border: 0; border-bottom: 1px solid #60a5fa; color: #fff; font: inherit; outline: none; padding: 0 2px; }
+
   .status { display: flex; flex-direction: column; gap: 6px; }
   .badge { display: inline-block; font-size: 12px; font-weight: 600; color: #fff; background: #9ca3af; padding: 3px 9px; border-radius: 999px; }
-  .now { font: 600 14px ui-monospace, Menlo, Consolas, monospace; }
+  .now { font: 600 14px var(--mono); white-space: pre-wrap; }
   .explain { font-size: 13px; color: #374151; line-height: 1.45; }
   .explain b { color: var(--ink); }
   .vars { display: flex; gap: 8px; flex-wrap: wrap; margin-top: 4px; }
-  .var { font: 13px ui-monospace, Menlo, Consolas, monospace; background: #f3f4f6; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
+  .var { font: 13px var(--mono); background: #f3f4f6; border: 1px solid var(--line); border-radius: 6px; padding: 3px 8px; }
   .var.changed { background: var(--hl); border-color: var(--hl-border); }
   .counter { font-size: 12px; color: var(--muted); }
 
-  /* controls */
   .controls { display: flex; flex-wrap: wrap; gap: 8px; align-items: center; }
-  .controls button {
-    border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; color: var(--ink);
-  }
+  .controls button { border: 1px solid var(--line); background: #fff; border-radius: 8px; padding: 7px 12px; font-size: 13px; cursor: pointer; color: var(--ink); }
   .controls button.primary { background: var(--accent); border-color: var(--accent); color: #fff; font-weight: 600; }
   .controls button:disabled { opacity: .45; cursor: default; }
   .controls label { font-size: 12.5px; color: #374151; display: flex; align-items: center; gap: 6px; }
@@ -72,16 +117,12 @@
   .chip { display: inline-flex; align-items: center; gap: 5px; }
   .chip i { width: 14px; height: 10px; border-radius: 2px; display: inline-block; }
 
-  /* 3D view */
   #view-wrap { position: relative; min-height: 420px; border-radius: 10px; overflow: hidden; border: 1px solid var(--line); background: #e5e7eb; }
   #view { position: absolute; inset: 0; }
   #view canvas { display: block; }
   .viewbtns { position: absolute; top: 10px; right: 10px; display: flex; gap: 6px; }
   .viewbtns button { border: 1px solid var(--line); background: rgba(255,255,255,.92); border-radius: 8px; padding: 6px 10px; font-size: 12px; cursor: pointer; }
-  .veil {
-    position: absolute; inset: 0; background: rgba(31,41,55,.78); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center;
-    text-align: center; padding: 24px; gap: 14px; backdrop-filter: blur(3px);
-  }
+  .veil { position: absolute; inset: 0; background: rgba(31,41,55,.78); color: #fff; display: flex; flex-direction: column; align-items: center; justify-content: center; text-align: center; padding: 24px; gap: 14px; backdrop-filter: blur(3px); }
   .veil h3 { margin: 0; font-size: 20px; }
   .veil p { margin: 0; max-width: 420px; color: #e5e7eb; line-height: 1.45; }
   .veil button { background: #fff; color: var(--dark); border: 0; border-radius: 8px; padding: 10px 18px; font-weight: 600; font-size: 14px; cursor: pointer; }
@@ -92,22 +133,79 @@
 <body>
 <header>
   <h1>Nested Loops with Turtle</h1>
-  <span>Watch the turtle move as each line runs — while loop on the left, for loop on the right.</span>
+  <span>Watch the turtle move as each line runs — then write your own.</span>
 </header>
 
 <main>
   <div class="side">
     <div class="card">
-      <h2>Program</h2>
-      <div class="progs" id="progs"></div>
+      <div class="tabs">
+        <button data-mode="seq">Sequential Examples</button>
+        <button data-mode="nested" class="on">Nested Loop Examples</button>
+        <button data-mode="cond">Conditional Examples</button>
+        <button data-mode="code">Code it yourself</button>
+      </div>
+
+      <div class="pane on" id="paneExamples">
+        <h2>Program</h2>
+        <div class="progs" id="progs"></div>
+        <div class="codes">
+          <div class="code hl-light"><div class="ttl" id="codeWttl">while version</div><pre id="codeW"></pre></div>
+          <div class="code hl-light" id="codeFwrap"><div class="ttl">for version</div><pre id="codeF"></pre></div>
+        </div>
+        <div class="legend" id="legendEx"></div>
+        <div class="toolbar" style="margin: 10px 0 0"><button id="btnOpenInEditor" title="Copy this program into the editor so you can change it">✎ Open in Code it yourself</button><span class="sp"></span><span class="engine" id="exEngine"></span></div>
+      </div>
+
+      <div class="pane" id="paneCode">
+        <div class="toolbar">
+          <button class="run" id="btnRun" title="Ctrl+Enter">▶ Run</button>
+          <select id="starter" title="Replace the editor with a starting program">
+            <option value="">Start from…</option>
+            <option value="blank">Blank</option>
+            <option value="ex1">Example 1 — square (for)</option>
+            <option value="ex2">Example 2 — row of squares (for)</option>
+            <option value="ex3">Example 3 — spinning triangles (for)</option>
+            <option value="ex2w">Example 2 — row of squares (while)</option>
+            <option value="input">Ask with input()</option>
+            <option value="func">Advanced — a function + colours</option>
+            <option value="cube3d">Example 4 — 3D cube (turtles3D)</option>
+            <option value="spiral3d">3D spiral (turtles3D)</option>
+          </select>
+          <button id="btnTheme" title="Switch the editor between dark and light colours">☀ Light</button>
+          <span class="sp"></span>
+          <input type="text" id="fname" value="my_turtle.py" title="File name for saving">
+          <button id="btnSave" title="Download the code as a .py file">💾 Save as .py</button>
+          <button id="btnOpen" title="Open a .py file from your computer">📂 Open .py</button>
+          <input type="file" id="fileIn" accept=".py,.txt" style="display:none">
+        </div>
+        <div class="codearea">
+          <div class="editor hl-dark" id="editor">
+            <div class="gutter" id="gutter">1</div>
+            <div class="edwrap">
+              <div class="backdrop" id="backdrop"></div>
+              <textarea id="code" spellcheck="false" autocapitalize="off" autocomplete="off" autocorrect="off"></textarea>
+            </div>
+          </div>
+          <div class="ref" id="ref"></div>
+        </div>
+        <div class="toolbar" style="margin: 8px 0 0">
+          <span class="engine" id="engine"><i></i><span id="engineText">Python: not loaded yet</span></span>
+          <span class="sp"></span>
+          <label class="engine">Engine
+            <select id="engineSel">
+              <option value="auto">Full Python when available</option>
+              <option value="basic">Basic (built-in, more explanations)</option>
+            </select>
+          </label>
+        </div>
+        <div class="legend" id="legendCode"></div>
+      </div>
     </div>
 
-    <div class="card">
-      <div class="codes">
-        <div class="code"><div class="ttl">while version</div><pre id="codeW"></pre></div>
-        <div class="code"><div class="ttl">for version</div><pre id="codeF"></pre></div>
-      </div>
-      <div class="legend" id="legend"></div>
+    <div class="card" style="padding: 8px 12px">
+      <h2 style="margin-bottom: 6px">Output (print &amp; input)</h2>
+      <div class="console" id="console" style="margin-top: 0"><span class="d">Output from print(), questions from input() and any errors appear here.</span></div>
     </div>
 
     <div class="card status">
@@ -144,34 +242,55 @@
     <div class="err" id="err">Could not load the 3D library (three.js). Check the internet connection and reload.</div>
   </div>
 </main>
+<div id="tip"></div>
 
-<!-- three.js is loaded from a CDN, so the page needs an internet connection; everything else is in this one file. -->
+<!-- Libraries come from a CDN, so the page needs an internet connection the first time; browsers cache them afterwards.
+     three.js draws the 3D turtle. Pyodide (real CPython compiled to WebAssembly, ~10 MB) runs student code; if it can't be
+     loaded, the page falls back to a small built-in Python-subset interpreter. -->
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/build/three.min.js"></script>
 <script src="https://cdn.jsdelivr.net/npm/three@0.128.0/examples/js/controls/OrbitControls.js"></script>
 <script>
 (function () {
   'use strict';
+  // Some preview sandboxes forward console output to a parent window with postMessage, which throws on objects such as
+  // URL instances (Pyodide logs one when WebAssembly is blocked). Stringify anything that isn't a plain value first.
+  for (const k of ['log', 'warn', 'error', 'info', 'debug']) {
+    const orig = console[k] && console[k].bind(console);
+    if (!orig) continue;
+    console[k] = (...a) => { try { orig(...a.map(x => (x && typeof x === 'object' && !(x instanceof Error)) ? (() => { try { return String(x.stack || x.message || x.href || JSON.stringify(x)); } catch (e) { return String(x); } })() : x)); } catch (e) { /* ignore */ } };
+  }
+  // Those same sandboxes wrap window.fetch and post the request URL to the parent; Pyodide passes URL objects, which
+  // can't be cloned. Hand fetch plain strings instead.
+  if (typeof window.fetch === 'function') {
+    const realFetch = window.fetch.bind(window);
+    window.fetch = (input, init) => realFetch(input instanceof URL ? input.href : input, init);
+  }
   if (typeof THREE === 'undefined') { document.getElementById('err').style.display = 'flex'; return; }
 
-  // ---------------------------------------------------------------- programs
+  const PYODIDE_URL = 'https://cdn.jsdelivr.net/pyodide/v0.26.4/full/';
   const PALETTE = ['#2563eb', '#ea580c', '#16a34a', '#9333ea', '#db2777', '#0891b2'];
   const GREY = '#6b7280';
-  const colorOf = i => (i < 0 ? GREY : PALETTE[i % PALETTE.length]);
+  const colorOf = c => (typeof c === 'string' ? c : (c < 0 ? GREY : PALETTE[c % PALETTE.length]));
+  const esc = s => String(s).replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;');
+  const fmt = v => (typeof v === 'number' ? (Number.isInteger(v) ? String(v) : String(+v.toFixed(4))) : (typeof v === 'string' ? `'${v}'` : (v === true ? 'True' : v === false ? 'False' : (v && v.__turtle) ? 'turtle' : (v && v.__screen) ? 'screen' : String(v))));
+  const facing = h => { const d = ((h % 360) + 360) % 360; return { 0: 'right →', 90: 'up ↑', 180: 'left ←', 270: 'down ↓' }[+d.toFixed(3)] || `${+d.toFixed(1)}°`; };
 
-  // w = line numbers in the while version, f = line numbers in the for version
+  // =====================================================================
+  //  EXAMPLE PROGRAMS (while / for side by side)
+  // =====================================================================
   const loop = (v, start, stop, w, f, body) => ({ type: 'loop', v, start, stop, w, f, body });
   const cmd = (op, arg, w, f, text) => ({ type: 'cmd', op, arg, w, f, text });
 
   const PROGRAMS = [
     {
-      id: 'ex1', group: 'Examples', title: '1 · Square', nested: false,
+      id: 'ex1', tab: 'nested', group: 'Examples', title: '1 · Square', nested: false,
       whileCode: ['import turtle', 'side = 0', 'while side < 4:', '    turtle.forward(60)', '    turtle.left(90)', '    side = side + 1'],
       forCode: ['import turtle', 'for side in range(4):', '    turtle.forward(60)', '    turtle.left(90)'],
       wTint: { 2: 'o', 3: 'o', 4: 'o', 5: 'o', 6: 'o' }, fTint: { 2: 'o', 3: 'o', 4: 'o' },
       body: [loop('side', 0, 4, { init: 2, cond: 3, inc: 6 }, 2, [cmd('forward', 60, 4, 3), cmd('left', 90, 5, 4)])]
     },
     {
-      id: 'ex2', group: 'Examples', title: '2 · Row of squares', nested: true,
+      id: 'ex2', tab: 'nested', group: 'Examples', title: '2 · Row of squares', nested: true,
       whileCode: ['import turtle', 'square = 0', 'while square < 3:', '    side = 0', '    while side < 4:',
         '        turtle.forward(40)', '        turtle.left(90)', '        side = side + 1', '    turtle.forward(60)', '    square = square + 1'],
       forCode: ['import turtle', 'for square in range(3):', '    for side in range(4):', '        turtle.forward(40)', '        turtle.left(90)', '    turtle.forward(60)'],
@@ -181,7 +300,7 @@
         cmd('forward', 60, 9, 6)])]
     },
     {
-      id: 'ex3', group: 'Examples', title: '3 · Spinning triangles', nested: true,
+      id: 'ex3', tab: 'nested', group: 'Examples', title: '3 · Spinning triangles', nested: true,
       whileCode: ['import turtle', 'turn = 0', 'while turn < 3:', '    side = 0', '    while side < 3:',
         '        turtle.forward(50)', '        turtle.left(120)', '        side = side + 1', '    turtle.left(120)', '    turn = turn + 1'],
       forCode: ['import turtle', 'for turn in range(3):', '    for side in range(3):', '        turtle.forward(50)', '        turtle.left(120)', '    turtle.left(120)'],
@@ -191,7 +310,7 @@
         cmd('left', 120, 9, 6)])]
     },
     {
-      id: 'q1', group: 'Exercises (draw first, then reveal)', title: 'Ex 1 · Row of triangles', nested: true, exercise: true,
+      id: 'q1', tab: 'nested', group: 'Exercises (draw first, then reveal)', title: 'Ex 1 · Row of triangles', nested: true, exercise: true,
       whileCode: ['import turtle', 'shape = 0', 'while shape < 3:', '    side = 0', '    while side < 3:',
         '        turtle.forward(40)', '        turtle.left(120)', '        side = side + 1', '    turtle.forward(60)', '    shape = shape + 1'],
       forCode: ['import turtle', 'for shape in range(3):', '    for side in range(3):', '        turtle.forward(40)', '        turtle.left(120)', '    turtle.forward(60)'],
@@ -201,7 +320,7 @@
         cmd('forward', 60, 9, 6)])]
     },
     {
-      id: 'q2', group: 'Exercises (draw first, then reveal)', title: 'Ex 2 · Windmill', nested: true, exercise: true,
+      id: 'q2', tab: 'nested', group: 'Exercises (draw first, then reveal)', title: 'Ex 2 · Windmill', nested: true, exercise: true,
       whileCode: ['import turtle', 'turn = 0', 'while turn < 4:', '    side = 0', '    while side < 4:',
         '        turtle.forward(40)', '        turtle.left(90)', '        side = side + 1', '    turtle.left(90)', '    turn = turn + 1'],
       forCode: ['import turtle', 'for turn in range(4):', '    for side in range(4):', '        turtle.forward(40)', '        turtle.left(90)', '    turtle.left(90)'],
@@ -211,7 +330,7 @@
         cmd('left', 90, 9, 6)])]
     },
     {
-      id: 'q3', group: 'Exercises (draw first, then reveal)', title: 'Ex 3 · Growing squares', nested: true, exercise: true,
+      id: 'q3', tab: 'nested', group: 'Exercises (draw first, then reveal)', title: 'Ex 3 · Growing squares', nested: true, exercise: true,
       whileCode: ['import turtle', 'size = 1', 'while size < 4:', '    side = 0', '    while side < 4:',
         '        turtle.forward(size * 30)', '        turtle.left(90)', '        side = side + 1', '    size = size + 1'],
       forCode: ['import turtle', 'for size in range(1, 4):', '    for side in range(4):', '        turtle.forward(size * 30)', '        turtle.left(90)'],
@@ -221,55 +340,183 @@
     }
   ];
 
-  // ---------------------------------------------------------------- trace builder
+  const EX4_SRC = String.raw`import time
+from turtles3D import Turtle3D
+
+def connect(t: Turtle3D, point1, point2):
+    """Helper function to draw a connecting line between 2 points"""
+
+    start = t.pos()
+    d = t.isdown()
+    t.penup()
+    t.goto(point1)
+    t.pendown()
+    t.goto(point2)
+    t.penup()
+    t.goto(start)
+    if d:
+        t.pendown()
+
+def draw_axes(t: Turtle3D):
+    """Helper function to draw the x,y, and z axes in different colors to help visualize where they are"""
+
+    t.pencolor("blue")
+    t.goto(500, 0, 0)
+    t.write("X")
+    t.goto(-500, 0, 0)
+    t.write("-X")
+    t.home()
+    t.pencolor("red")
+    t.goto(0, 500, 0)
+    t.write("Y")
+    t.goto(0, -500, 0)
+    t.write("-Y")
+    t.home()
+    t.pencolor("green")
+    t.goto(0, 0, 500)
+    t.write("Z")
+    t.goto(0, 0, -500)
+    t.write("-Z")
+    t.home()
+    t.pencolor("black")
+
+def run(t: Turtle3D):
+    """Main function to handle our drawing and animation"""
+
+    # here we define the eight points that make up the corners of our cube
+    points = [
+        [50, -50, -50],  # bottom-right-front
+        [50, 50, -50],  # top-right-front
+        [-50, 50, -50],  # top-left-front
+        [-50, -50, -50],  # bottom-left-front
+        [50, -50, 50],  # bottom-right-back
+        [50, 50, 50],  # top-right-back
+        [-50, 50, 50],  # top-left-back
+        [-50, -50, 50],  # bottom-left-back
+    ]
+
+    # connecting each of the points to the other points it needs to
+    for i in range(4):
+        connect(t, points[i], points[(i + 1) % 4])
+        connect(t, points[i + 4], points[((i + 1) % 4) + 4])
+        connect(t, points[i], points[i + 4])
+
+
+    # animating 2 degree rotations of each axis 10,000 times
+    angle = 2
+    for i in range(10000):
+
+        t.rotateX(angle, False) # False because we don't want to redraw the lines until the final rotation
+        t.rotateY(angle, False)
+        t.rotateZ(angle)
+
+        time.sleep(1 / 60) # so we are redrawing 60 times per second. not exactly equal to 60fps due draw times, but pretty close.
+
+
+if __name__ == "__main__":
+    t = Turtle3D()
+    s = t.getscreen()
+
+    draw_axes(t) # comment out this line for smoother animation
+
+    run(t)
+    s.exitonclick()
+`;
+  PROGRAMS.splice(3, 0, { id: 'ex4', tab: 'nested', group: 'Examples', title: '4 · 3D cube (turtles3D)', single: true, engine: 'pyodide', source: EX4_SRC,
+    blurb: 'A real program from the turtles3D library: functions, a list of 3D points, and a loop that spins the whole drawing. It needs the full Python engine.' });
+
+
+  // ---- single-file example programs for the Sequential / Conditional tabs (and the input() examples)
+  const SINGLE_PROGRAMS = [
+    { id: 's1', tab: 'seq', group: 'Sequential examples', title: '1 · Square, step by step', single: true, engine: 'basic',
+      blurb: 'Instructions run one after another, top to bottom. Count how many times forward and left are repeated — a loop would do this in three lines.',
+      source: "import turtle\n\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\nturtle.left(90)\n" },
+    { id: 's2', tab: 'seq', group: 'Sequential examples', title: '2 · A house', single: true, engine: 'basic',
+      blurb: 'penup() and goto() move the turtle without drawing, and setheading() points it in an exact direction.',
+      source: "import turtle\n\n# the walls\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\nturtle.left(90)\nturtle.forward(80)\n\n# jump to the top-left corner without drawing\nturtle.penup()\nturtle.goto(0, 80)\nturtle.pendown()\n\n# the roof\nturtle.setheading(60)\nturtle.forward(80)\nturtle.right(120)\nturtle.forward(80)\n" },
+    { id: 's3', tab: 'seq', group: 'Sequential examples', title: '3 · Variables in a sequence', single: true, engine: 'basic',
+      blurb: 'A variable stores a value. Changing it later changes what the next forward() does — watch the variables box.',
+      source: "import turtle\n\nsize = 50\nturtle.pencolor('blue')\nturtle.forward(size)\nturtle.left(90)\n\nsize = size * 2\nturtle.pencolor('red')\nturtle.forward(size)\nturtle.left(90)\n\nprint('The last side was', size, 'steps long')\n" },
+    { id: 's4', tab: 'seq', group: 'Sequential examples', title: '4 · Letters with penup', single: true, engine: 'basic',
+      blurb: 'Drawing letters means lifting the pen between strokes. Every line here runs exactly once, in order.',
+      source: "import turtle\n\n# the letter L\nturtle.setheading(270)\nturtle.forward(60)\nturtle.setheading(0)\nturtle.forward(40)\n\n# move to where the T starts, pen up so nothing is drawn\nturtle.penup()\nturtle.goto(70, 0)\nturtle.pendown()\n\n# the letter T\nturtle.forward(50)\nturtle.penup()\nturtle.goto(95, 0)\nturtle.pendown()\nturtle.setheading(270)\nturtle.forward(60)\n" },
+    { id: 's5', tab: 'seq', group: 'Sequential examples', title: '5 · input() — ask for the size', single: true, engine: 'basic',
+      blurb: 'input() stops the program and waits for you to type in the Output box. The answer is text, so int() turns it into a number first.',
+      source: "import turtle\n\nsize = int(input('How long should each side be? '))\nturtle.pencolor('green')\n\nturtle.forward(size)\nturtle.left(90)\nturtle.forward(size)\nturtle.left(90)\nturtle.forward(size)\nturtle.left(90)\nturtle.forward(size)\n\nprint('Drew a square with sides of', size)\n" },
+
+    { id: 'n5', tab: 'nested', group: 'Examples', title: '5 · input() — ask how many squares', single: true, engine: 'basic',
+      blurb: 'The number typed into input() becomes the outer loop\'s range(), so the row is as long as you asked for.',
+      source: "import turtle\n\ncount = int(input('How many squares in the row? '))\n\nfor square in range(count):\n    for side in range(4):\n        turtle.forward(40)\n        turtle.left(90)\n    turtle.forward(60)\n\nprint('Drew', count, 'squares')\n" },
+
+    { id: 'c1', tab: 'cond', group: 'Conditional examples', title: '1 · if / else — colour by size', single: true, engine: 'basic',
+      blurb: 'An if statement checks a condition once and runs only one of the two blocks. Open it in Code it yourself and change size to 30 to see the other branch.',
+      source: "import turtle\n\nsize = 70\n\nif size > 50:\n    turtle.pencolor('red')\nelse:\n    turtle.pencolor('blue')\n\nfor side in range(4):\n    turtle.forward(size)\n    turtle.left(90)\n\nprint('size is', size)\n" },
+    { id: 'c2', tab: 'cond', group: 'Conditional examples', title: '2 · elif — shape with any number of sides', single: true, engine: 'basic',
+      blurb: 'if / elif / else tries each condition in order and runs the first block that is True. 360 ÷ sides gives the turning angle for any regular shape.',
+      source: "import turtle\n\nsides = 5\n\nif sides == 3:\n    turtle.pencolor('green')\nelif sides == 4:\n    turtle.pencolor('blue')\nelse:\n    turtle.pencolor('purple')\n\nfor side in range(sides):\n    turtle.forward(60)\n    turtle.left(360 / sides)\n" },
+    { id: 'c3', tab: 'cond', group: 'Conditional examples', title: '3 · if inside a loop — alternate colours', single: true, engine: 'basic',
+      blurb: 'The if runs every time round the loop. side % 2 is the remainder after dividing by 2, so it is 0 for even numbers and 1 for odd ones.',
+      source: "import turtle\n\nfor side in range(8):\n    if side % 2 == 0:\n        turtle.pencolor('orange')\n    else:\n        turtle.pencolor('black')\n    turtle.forward(50)\n    turtle.left(45)\n" },
+    { id: 'c4', tab: 'cond', group: 'Conditional examples', title: '4 · while True + if + break', single: true, engine: 'basic',
+      blurb: 'while True would loop forever, so an if inside it decides when to break out. Each side gets longer until the condition is met.',
+      source: "import turtle\n\nlength = 10\nwhile True:\n    turtle.forward(length)\n    turtle.left(60)\n    length = length + 8\n    if length > 90:\n        print('Long enough - stopping')\n        break\n" },
+    { id: 'c5', tab: 'cond', group: 'Conditional examples', title: '5 · input() — ask which shape', single: true, engine: 'basic',
+      blurb: 'Comparing text with == chooses what to draw. Type square, triangle, or something else to see each branch.',
+      source: "import turtle\n\nshape = input('Square or triangle? ')\n\nif shape == 'square':\n    for side in range(4):\n        turtle.forward(60)\n        turtle.left(90)\nelif shape == 'triangle':\n    for side in range(3):\n        turtle.forward(60)\n        turtle.left(120)\nelse:\n    print(\"I don't know how to draw a\", shape)\n" },
+  ];
+  for (const sp of SINGLE_PROGRAMS) {
+    if (sp.tab === 'nested') PROGRAMS.splice(PROGRAMS.findIndex(q => q.id === 'q1'), 0, sp);   // after Example 4, before the exercises
+    else PROGRAMS.push(sp);
+  }
+
   function loopVars(stmts, acc) {
     acc = acc || [];
     for (const s of stmts) if (s.type === 'loop') { acc.push(s.v); loopVars(s.body, acc); }
     return acc;
   }
 
-  function buildTrace(prog) {
+  function buildExampleTrace(prog) {
     const ev = [];
     let x = 0, y = 0, h = 0, turtleSteps = 0;
     const vars = {};
     const snap = () => Object.assign({}, vars);
-
+    const lineRef = (w, f) => `while line ${w} · for line ${f}`;
+    const badgeOf = () => Object.entries(vars).map(([k, v]) => `${k} = ${v}`).join(' · ');
     function run(stmts, depth, outerIdx) {
       for (const s of stmts) {
         if (s.type === 'loop') {
           const range = s.start === 0 ? `range(${s.stop})` : `range(${s.start}, ${s.stop})`;
           vars[s.v] = s.start;
-          ev.push({ kind: 'ctl', w: s.w.init, f: s.f, vars: snap(), changed: s.v, outerIdx,
-            wText: `<b>${s.v} = ${s.start}</b> — START: the counter is created.`,
-            fText: `<b>for ${s.v} in ${range}:</b> — the for line creates ${s.v} and gives it its first value, ${s.start}.` });
+          ev.push({ kind: 'ctl', w: s.w.init, f: s.f, vars: snap(), changed: s.v, badge: 'loop bookkeeping', now: lineRef(s.w.init, s.f),
+            html: `<div><b>while:</b> <b>${s.v} = ${s.start}</b> — START: the counter is created.</div><div><b>for:</b> <b>for ${s.v} in ${range}:</b> — the for line creates ${s.v} and gives it its first value, ${s.start}.</div>` });
           let i = 0;
           for (let v = s.start; v < s.stop; v++, i++) {
             vars[s.v] = v;
-            ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), outerIdx,
-              wText: `<b>while ${s.v} < ${s.stop}:</b> — CHECK: ${v} < ${s.stop} is True, so run the body.`,
-              fText: `<b>for ${s.v} in ${range}:</b> — ${range} still has values, so run the body with ${s.v} = ${v}.` });
+            ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), badge: 'loop bookkeeping', now: lineRef(s.w.cond, s.f),
+              html: `<div><b>while:</b> <b>while ${s.v} < ${s.stop}:</b> — CHECK: ${v} < ${s.stop} is True, so run the body.</div><div><b>for:</b> <b>for ${s.v} in ${range}:</b> — ${range} still has values, so run the body with ${s.v} = ${v}.</div>` });
             run(s.body, depth + 1, depth === 0 ? i : outerIdx);
             vars[s.v] = v + 1;
-            ev.push({ kind: 'ctl', w: s.w.inc, f: s.f, vars: snap(), changed: s.v, outerIdx,
-              wText: `<b>${s.v} = ${s.v} + 1</b> — STEP: ${s.v} is now ${v + 1}.`,
-              fText: `<b>for ${s.v} in ${range}:</b> — back to the for line; it moves ${s.v} on by itself${v + 1 < s.stop ? ` (next value: ${v + 1})` : ''}.` });
+            ev.push({ kind: 'ctl', w: s.w.inc, f: s.f, vars: snap(), changed: s.v, badge: 'loop bookkeeping', now: lineRef(s.w.inc, s.f),
+              html: `<div><b>while:</b> <b>${s.v} = ${s.v} + 1</b> — STEP: ${s.v} is now ${v + 1}.</div><div><b>for:</b> <b>for ${s.v} in ${range}:</b> — back to the for line; it moves ${s.v} on by itself${v + 1 < s.stop ? ` (next value: ${v + 1})` : ''}.</div>` });
           }
-          ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), outerIdx, end: true,
-            wText: `<b>while ${s.v} < ${s.stop}:</b> — CHECK: ${s.stop} < ${s.stop} is False, so the loop ends.`,
-            fText: `<b>for ${s.v} in ${range}:</b> — ${range} has no values left, so the loop ends.` });
+          ev.push({ kind: 'ctl', w: s.w.cond, f: s.f, vars: snap(), badge: 'loop bookkeeping', now: lineRef(s.w.cond, s.f),
+            html: `<div><b>while:</b> <b>while ${s.v} < ${s.stop}:</b> — CHECK: ${s.stop} < ${s.stop} is False, so the loop ends.</div><div><b>for:</b> <b>for ${s.v} in ${range}:</b> — ${range} has no values left, so the loop ends.</div>` });
           continue;
         }
         const arg = typeof s.arg === 'function' ? s.arg(vars) : s.arg;
         const color = (depth === 1 && prog.nested) ? -1 : outerIdx;
         const text = s.text ? `${s.text}   →   ${s.op}(${arg})` : `turtle.${s.op}(${arg})`;
+        const where = depth >= 2 ? 'inside the <b>inner</b> loop' : (prog.nested ? 'in the <b>outer</b> loop (after the inner loop finished)' : 'inside the loop');
         turtleSteps++;
         if (s.op === 'forward') {
           const r = h * Math.PI / 180;
           const nx = x + arg * Math.cos(r), ny = y + arg * Math.sin(r);
-          ev.push({ kind: 'forward', dist: arg, x0: x, y0: y, x1: nx, y1: ny, heading: h, color, w: s.w, f: s.f, vars: snap(), text, n: turtleSteps, outerIdx, depth });
+          ev.push({ kind: 'move', x0: x, y0: y, x1: nx, y1: ny, heading: h, pen: true, color, w: s.w, f: s.f, vars: snap(), n: turtleSteps, now: text, badge: badgeOf(), badgeColor: colorOf(color),
+            html: `Turtle step ${turtleSteps}: draws a line ${arg} steps long — this line is ${where}. (${lineRef(s.w, s.f)})` });
           x = nx; y = ny;
         } else {
-          ev.push({ kind: 'left', deg: arg, h0: h, h1: h + arg, x, y, color, w: s.w, f: s.f, vars: snap(), text, n: turtleSteps, outerIdx, depth });
+          ev.push({ kind: 'turn', x, y, h0: h, h1: h + arg, color, w: s.w, f: s.f, vars: snap(), n: turtleSteps, now: text, badge: badgeOf(), badgeColor: colorOf(color),
+            html: `Turtle step ${turtleSteps}: turns ${arg}° anticlockwise, no line drawn — ${where}. Now facing ${facing(h + arg)}. (${lineRef(s.w, s.f)})` });
           h += arg;
         }
       }
@@ -278,18 +525,1011 @@
     return { ev, turtleSteps };
   }
 
-  function boundsOf(ev) {
-    let minX = 0, maxX = 0, minY = 0, maxY = 0;
-    for (const e of ev) {
-      if (e.kind === 'forward') {
-        minX = Math.min(minX, e.x0, e.x1); maxX = Math.max(maxX, e.x0, e.x1);
-        minY = Math.min(minY, e.y0, e.y1); maxY = Math.max(maxY, e.y0, e.y1);
+  // =====================================================================
+  //  INPUT HAND-OFF: both engines report needInput when input() has no queued answer;
+  //  the page asks the student in the console (like IDLE), then re-runs with the answer queued.
+  // =====================================================================
+  class NeedInput { constructor(prompt) { this.prompt = prompt; } }
+
+  // =====================================================================
+  //  BASIC ENGINE — built-in interpreter for the Year 9 subset (fallback when Pyodide can't load)
+  // =====================================================================
+  class PyError extends Error { constructor(kind, msg, line) { super(msg); this.kind = kind; this.line = line; } }
+  const MAX_STMTS = 20000, MAX_TURTLE = 3000;
+  const TURTLE = { __turtle: true }, RANDOM = { __random: true }, MATHM = { __math: true };
+  const KEYWORDS = new Set(['and', 'or', 'not', 'True', 'False', 'None', 'in', 'if', 'elif', 'else', 'while', 'for', 'import', 'from', 'pass', 'break', 'continue', 'def', 'return']);
+  const TURTLE_FNS = ['forward', 'backward', 'left', 'right', 'penup', 'pendown', 'goto', 'setheading', 'home', 'pencolor', 'pensize', 'hideturtle', 'showturtle', 'setx', 'sety', 'circle', 'dot', 'xcor', 'ycor', 'heading', 'isdown'];
+
+  function mulberry32(a) { return function () { a |= 0; a = a + 0x6D2B79F5 | 0; let t = Math.imul(a ^ a >>> 15, 1 | a); t = t + Math.imul(t ^ t >>> 7, 61 | t) ^ t; return ((t ^ t >>> 14) >>> 0) / 4294967296; }; }
+
+  function tokenize(src, line) {
+    const toks = [];
+    const re = /\s*(?:(\d+\.\d*|\.\d+|\d+)|("(?:[^"\\\n]|\\.)*"|'(?:[^'\\\n]|\\.)*')|([A-Za-z_]\w*)|(\*\*|\/\/|<=|>=|==|!=|\+=|-=|\*=|\/=|[-+*\/%<>=(),.:])|(#.*)|(\S))/y;
+    let pos = 0;
+    while (pos < src.length) {
+      re.lastIndex = pos;
+      const m = re.exec(src);
+      if (!m) { if (src.slice(pos).trim() === '') break; throw new PyError('SyntaxError', `I can't read this: "${src.slice(pos).trim()}"`, line); }
+      pos = re.lastIndex;
+      if (m[1] !== undefined) toks.push({ t: 'num', v: parseFloat(m[1]) });
+      else if (m[2] !== undefined) toks.push({ t: 'str', v: m[2].slice(1, -1).replace(/\\n/g, '\n').replace(/\\t/g, '\t').replace(/\\(['"\\])/g, '$1') });
+      else if (m[3] !== undefined) toks.push({ t: 'name', v: m[3] });
+      else if (m[4] !== undefined) toks.push({ t: 'op', v: m[4] });
+      else if (m[5] !== undefined) break;
+      else if (m[6] !== undefined) {
+        const ch = m[6];
+        const hint = ch === '"' || ch === "'" ? ' — a string is missing its closing quote?' : (ch === '[' || ch === ']' ? ' — lists need the full Python engine' : '');
+        throw new PyError('SyntaxError', `unexpected character "${ch}"${hint}`, line);
       }
     }
-    return { minX, maxX, minY, maxY };
+    return toks;
   }
 
-  // ---------------------------------------------------------------- three.js scene
+  class Parser {
+    constructor(toks, line) { this.toks = toks; this.i = 0; this.line = line; }
+    peek(k = 0) { return this.toks[this.i + k]; }
+    next() { return this.toks[this.i++]; }
+    isOp(v) { const t = this.peek(); return t && t.t === 'op' && t.v === v; }
+    isName(v) { const t = this.peek(); return t && t.t === 'name' && t.v === v; }
+    expectOp(v, why) { if (!this.isOp(v)) throw new PyError('SyntaxError', why || `expected "${v}"` + (this.peek() ? ` but found "${this.peek().v}"` : ' at the end of the line'), this.line); this.next(); }
+    expectName(v) { if (!this.isName(v)) throw new PyError('SyntaxError', `expected "${v}"` + (this.peek() ? ` but found "${this.peek().v}"` : ''), this.line); this.next(); }
+    end() { if (this.i < this.toks.length) throw new PyError('SyntaxError', `I didn't expect "${this.peek().v}" here`, this.line); }
+    statement() {
+      const t0 = this.peek(), t1 = this.peek(1);
+      if (!t0) throw new PyError('SyntaxError', 'empty statement', this.line);
+      if (t0.t === 'name') {
+        switch (t0.v) {
+          case 'import': { this.next(); const m = this.next(); if (!m || m.t !== 'name' || !['turtle', 'random', 'math', 'time'].includes(m.v)) throw new PyError('SyntaxError', 'only turtle, random and math can be imported in basic mode', this.line); this.end(); return { t: 'import', mod: m.v, line: this.line }; }
+          case 'from': {
+            this.next();
+            if (this.isName('turtles3D') || this.isName('turtle3D')) throw new PyError('SyntaxError', 'turtles3D (3D turtle) needs the full Python engine — switch Engine to "Full Python" and make sure it has loaded', this.line);
+            this.expectName('turtle'); this.expectName('import'); this.expectOp('*'); this.end(); return { t: 'import', mod: 'turtle', star: true, line: this.line };
+          }
+          case 'while': { this.next(); const cond = this.expr(); this.expectOp(':', 'a while line must end with a colon  :'); this.end(); return { t: 'while', cond, body: [], block: true, line: this.line }; }
+          case 'for': {
+            this.next();
+            const v = this.next();
+            if (!v || v.t !== 'name' || KEYWORDS.has(v.v)) throw new PyError('SyntaxError', 'for needs a variable name, e.g.  for side in range(4):', this.line);
+            this.expectName('in');
+            if (!this.isName('range')) throw new PyError('SyntaxError', 'basic mode only has  for … in range(…)  — the full Python engine does lists too', this.line);
+            this.next(); this.expectOp('(');
+            const args = this.args();
+            if (args.length < 1 || args.length > 3) throw new PyError('SyntaxError', 'range() takes 1, 2 or 3 numbers', this.line);
+            this.expectOp(':', 'a for line must end with a colon  :'); this.end();
+            return { t: 'for', v: v.v, args, body: [], block: true, line: this.line };
+          }
+          case 'if': { this.next(); const cond = this.expr(); this.expectOp(':', 'an if line must end with a colon  :'); this.end(); return { t: 'if', branches: [{ cond, body: [], line: this.line }], block: true, line: this.line }; }
+          case 'elif': { this.next(); const cond = this.expr(); this.expectOp(':', 'an elif line must end with a colon  :'); this.end(); return { t: 'elif', cond, body: [], block: true, line: this.line }; }
+          case 'else': { this.next(); this.expectOp(':', 'else must be written  else:'); this.end(); return { t: 'else', body: [], block: true, line: this.line }; }
+          case 'pass': this.next(); this.end(); return { t: 'pass', line: this.line };
+          case 'break': this.next(); this.end(); return { t: 'break', line: this.line };
+          case 'continue': this.next(); this.end(); return { t: 'continue', line: this.line };
+          case 'def': case 'return': throw new PyError('SyntaxError', 'functions (def) need the full Python engine', this.line);
+        }
+        if (t1 && t1.t === 'op' && ['=', '+=', '-=', '*=', '/='].includes(t1.v)) {
+          if (KEYWORDS.has(t0.v)) throw new PyError('SyntaxError', `"${t0.v}" is a Python keyword and can't be a variable name`, this.line);
+          this.next(); this.next();
+          const e = this.expr(); this.end();
+          return { t: 'assign', name: t0.v, op: t1.v, expr: e, line: this.line };
+        }
+        if (t1 && t1.t === 'op' && t1.v === '==') throw new PyError('SyntaxError', 'use a single  =  to store a value (== is for comparing)', this.line);
+      }
+      const e = this.expr(); this.end();
+      if (e.t !== 'call') throw new PyError('SyntaxError', 'this line doesn\'t do anything — did you mean to store it in a variable or call a turtle command?', this.line);
+      return { t: 'expr', expr: e, line: this.line };
+    }
+    args() {
+      const a = [];
+      if (this.isOp(')')) { this.next(); return a; }
+      for (;;) {
+        a.push(this.expr());
+        if (this.isOp(',')) { this.next(); continue; }
+        this.expectOp(')', 'missing a closing bracket  )');
+        return a;
+      }
+    }
+    expr() { return this.or(); }
+    or() { let l = this.and(); while (this.isName('or')) { this.next(); l = { t: 'bin', op: 'or', l, r: this.and() }; } return l; }
+    and() { let l = this.not(); while (this.isName('and')) { this.next(); l = { t: 'bin', op: 'and', l, r: this.not() }; } return l; }
+    not() { if (this.isName('not')) { this.next(); return { t: 'un', op: 'not', e: this.not() }; } return this.cmp(); }
+    cmp() {
+      const l = this.add();
+      const t = this.peek();
+      if (t && t.t === 'op' && ['<', '>', '<=', '>=', '==', '!='].includes(t.v)) { this.next(); return { t: 'bin', op: t.v, l, r: this.add() }; }
+      if (t && t.t === 'op' && t.v === '=') throw new PyError('SyntaxError', 'use  ==  to compare two values (a single = stores a value)', this.line);
+      return l;
+    }
+    add() { let l = this.mul(); for (;;) { const t = this.peek(); if (t && t.t === 'op' && (t.v === '+' || t.v === '-')) { this.next(); l = { t: 'bin', op: t.v, l, r: this.mul() }; } else return l; } }
+    mul() { let l = this.unary(); for (;;) { const t = this.peek(); if (t && t.t === 'op' && ['*', '/', '//', '%'].includes(t.v)) { this.next(); l = { t: 'bin', op: t.v, l, r: this.unary() }; } else return l; } }
+    unary() { if (this.isOp('-')) { this.next(); return { t: 'un', op: '-', e: this.unary() }; } if (this.isOp('+')) { this.next(); return this.unary(); } return this.pow(); }
+    pow() { const b = this.atom(); if (this.isOp('**')) { this.next(); return { t: 'bin', op: '**', l: b, r: this.unary() }; } return b; }
+    atom() {
+      const t = this.next();
+      if (!t) throw new PyError('SyntaxError', 'something is missing at the end of this line', this.line);
+      if (t.t === 'num') return { t: 'num', v: t.v };
+      if (t.t === 'str') return { t: 'str', v: t.v };
+      if (t.t === 'op' && t.v === '(') { const e = this.expr(); this.expectOp(')', 'missing a closing bracket  )'); return e; }
+      if (t.t === 'name') {
+        if (t.v === 'True') return { t: 'num', v: true };
+        if (t.v === 'False') return { t: 'num', v: false };
+        if (KEYWORDS.has(t.v)) throw new PyError('SyntaxError', `"${t.v}" can't be used here`, this.line);
+        let node = { t: 'name', n: t.v };
+        for (;;) {
+          if (this.isOp('.')) { this.next(); const a = this.next(); if (!a || a.t !== 'name') throw new PyError('SyntaxError', 'expected a command name after the dot', this.line); node = { t: 'attr', obj: node, name: a.v }; continue; }
+          if (this.isOp('(')) { this.next(); node = { t: 'call', target: node, args: this.args() }; continue; }
+          return node;
+        }
+      }
+      throw new PyError('SyntaxError', `I didn't expect "${t.v}" here`, this.line);
+    }
+  }
+
+  function parseProgram(src) {
+    const lines = [];
+    src.split('\n').forEach((text, i) => {
+      const n = i + 1;
+      const expanded = text.replace(/\t/g, '    ');
+      const stripped = expanded.replace(/^\s+/, '').replace(/\s+$/, '');
+      if (stripped === '' || stripped.startsWith('#')) return;
+      const indent = expanded.length - expanded.replace(/^\s+/, '').length;
+      const toks = tokenize(stripped, n);
+      if (toks.length) lines.push({ n, indent, toks });
+    });
+    let i = 0;
+    function block(indent) {
+      const stmts = [];
+      while (i < lines.length) {
+        const L = lines[i];
+        if (L.indent < indent) break;
+        if (L.indent > indent) throw new PyError('IndentationError', 'unexpected indent — this line is indented more than the one before it', L.n);
+        i++;
+        const st = new Parser(L.toks, L.n).statement();
+        if (st.block) {
+          if (i >= lines.length || lines[i].indent <= indent) throw new PyError('IndentationError', `expected an indented block after line ${L.n} (indent the lines that belong to it by 4 spaces)`, L.n);
+          const body = block(lines[i].indent);
+          if (st.t === 'if') st.branches[0].body = body; else st.body = body;
+        }
+        if (st.t === 'elif' || st.t === 'else') {
+          const prev = stmts[stmts.length - 1];
+          if (!prev || prev.t !== 'if' || prev.closed) throw new PyError('SyntaxError', `${st.t} must come straight after an if (or elif) block`, L.n);
+          prev.branches.push({ cond: st.t === 'elif' ? st.cond : null, body: st.body, line: st.line });
+          if (st.t === 'else') prev.closed = true;
+          continue;
+        }
+        stmts.push(st);
+      }
+      return stmts;
+    }
+    if (lines.length && lines[0].indent !== 0) throw new PyError('IndentationError', 'the first line must start at the left edge (no indent)', lines[0].n);
+    const prog = block(0);
+    if (i < lines.length) throw new PyError('IndentationError', 'unexpected indent', lines[i].n);
+    const hasLoop = stmts => stmts.some(s => s.t === 'while' || s.t === 'for' || (s.t === 'if' && s.branches.some(b => hasLoop(b.body))));
+    (function mark(stmts) {
+      for (const s of stmts) {
+        if (s.t === 'while' || s.t === 'for') { s.hasNested = hasLoop(s.body); mark(s.body); }
+        if (s.t === 'if') s.branches.forEach(b => mark(b.body));
+      }
+    })(prog);
+    return prog;
+  }
+
+  function exprText(e) {
+    switch (e.t) {
+      case 'num': return e.v === true ? 'True' : e.v === false ? 'False' : String(e.v);
+      case 'str': return `'${e.v}'`;
+      case 'name': return e.n;
+      case 'attr': return `${exprText(e.obj)}.${e.name}`;
+      case 'call': return `${exprText(e.target)}(${e.args.map(exprText).join(', ')})`;
+      case 'un': return e.op === 'not' ? `not ${exprText(e.e)}` : `-${exprText(e.e)}`;
+      case 'bin': return `${exprText(e.l)} ${e.op} ${exprText(e.r)}`;
+    }
+    return '?';
+  }
+
+  const BREAK = { brk: true }, CONTINUE = { cont: true };
+  const TURTLE_ALIASES = { fd: 'forward', bk: 'backward', back: 'backward', lt: 'left', rt: 'right', pu: 'penup', up: 'penup', pd: 'pendown', down: 'pendown', seth: 'setheading', setpos: 'goto', setposition: 'goto', ht: 'hideturtle', st: 'showturtle', width: 'pensize', color: 'pencolor' };
+  const TURTLE_IGNORED = new Set(['speed', 'shape', 'bgcolor', 'done', 'mainloop', 'exitonclick', 'title', 'tracer', 'update', 'delay', 'screensize', 'setup', 'shapesize', 'turtlesize', 'fillcolor', 'begin_fill', 'end_fill', 'clear', 'reset', 'bye', 'colormode', 'stamp']);
+
+  function runBasic(prog, answers, seed) {
+    const ev = [];
+    const vars = {}, order = [];
+    const t = { x: 0, y: 0, h: 0, pen: true, color: null, size: 1, visible: true };
+    let stmtCount = 0, turtleSteps = 0, star = false, ansI = 0;
+    const rnd = mulberry32(seed);
+    const loopStack = [];
+    const snap = () => { const o = {}; for (const k of order) o[k] = vars[k]; return o; };
+    const setVar = (k, v) => { if (!(k in vars)) order.push(k); vars[k] = v; };
+    const tick = line => { if (++stmtCount > MAX_STMTS) throw new PyError('Stopped', `the program ran ${MAX_STMTS} lines and was still going — a loop probably never ends. Check that the while loop's counter changes.`, line); };
+    const colorNow = () => (t.color ? t.color : loopStack.length === 0 ? -1 : (loopStack.length === 1 && loopStack[0].node.hasNested) ? -1 : loopStack[0].iter);
+    const badgeNow = () => { const vs = loopStack.map(f => f.v ? `${f.v} = ${vars[f.v]}` : null).filter(Boolean); return vs.length ? vs.join(' · ') : 'turtle'; };
+    const whereNow = () => loopStack.length === 0 ? 'not inside any loop' : loopStack.length === 1 ? (loopStack[0].node.hasNested ? 'in the <b>outer</b> loop (not inside the inner one)' : 'inside the loop') : `inside the <b>inner</b> loop (${loopStack.length} loops deep)`;
+    const ctl = (line, now, html, changed, extra) => ev.push(Object.assign({ kind: 'ctl', line, now, html, vars: snap(), changed, badge: `line ${line}` }, extra || {}));
+    const numArg = (v, what, line) => { if (typeof v !== 'number') throw new PyError('TypeError', `${what} needs a number, not ${fmt(v)}`, line); return v; };
+    function truthy(v) { return !(v === 0 || v === '' || v === false || v === null || v === undefined); }
+
+    function evalExpr(e, line) {
+      switch (e.t) {
+        case 'num': case 'str': return e.v;
+        case 'name':
+          if (e.n in vars) return vars[e.n];
+          if (e.n === 'turtle') return TURTLE;
+          if (e.n === 'random') return RANDOM;
+          if (e.n === 'math') return MATHM;
+          if (TURTLE_ALIASES[e.n] || TURTLE_FNS.includes(e.n)) {
+            if (star) return { __tfn: TURTLE_ALIASES[e.n] || e.n };
+            throw new PyError('NameError', `"${e.n}" is not defined — write  turtle.${e.n}(…)  (or add  from turtle import *  at the top)`, line);
+          }
+          throw new PyError('NameError', `"${e.n}" is not defined — has it been given a value yet?`, line);
+        case 'attr': {
+          const obj = evalExpr(e.obj, line);
+          if (obj === TURTLE) return { __tfn: TURTLE_ALIASES[e.name] || e.name };
+          if (obj === RANDOM) return { __rfn: e.name };
+          if (obj === MATHM) { if (e.name === 'pi') return Math.PI; if (['sqrt', 'floor', 'ceil', 'sin', 'cos', 'tan', 'radians', 'degrees'].includes(e.name)) return { __mfn: e.name }; throw new PyError('AttributeError', `math has no "${e.name}" in basic mode`, line); }
+          if (obj && obj.__screen) return { __sfn: e.name };
+          throw new PyError('AttributeError', `"${exprText(e.obj)}" has no ".${e.name}"`, line);
+        }
+        case 'un': { const v = evalExpr(e.e, line); if (e.op === 'not') return !truthy(v); return -numArg(v, 'minus', line); }
+        case 'bin': {
+          if (e.op === 'and') { const l = evalExpr(e.l, line); return truthy(l) ? evalExpr(e.r, line) : l; }
+          if (e.op === 'or') { const l = evalExpr(e.l, line); return truthy(l) ? l : evalExpr(e.r, line); }
+          const l = evalExpr(e.l, line), r = evalExpr(e.r, line);
+          const ln = typeof l === 'number' || typeof l === 'boolean', rn = typeof r === 'number' || typeof r === 'boolean';
+          switch (e.op) {
+            case '+': if (ln && rn) return +l + +r; if (typeof l === 'string' && typeof r === 'string') return l + r;
+              throw new PyError('TypeError', `can't add ${fmt(l)} and ${fmt(r)} — use str() or int() to convert first`, line);
+            case '-': if (ln && rn) return l - r; break;
+            case '*': if (ln && rn) return l * r; if (typeof l === 'string' && rn) return l.repeat(Math.max(0, r)); if (typeof r === 'string' && ln) return r.repeat(Math.max(0, l)); break;
+            case '/': if (ln && rn) { if (r === 0) throw new PyError('ZeroDivisionError', 'division by zero', line); return l / r; } break;
+            case '//': if (ln && rn) { if (r === 0) throw new PyError('ZeroDivisionError', 'division by zero', line); return Math.floor(l / r); } break;
+            case '%': if (ln && rn) { if (r === 0) throw new PyError('ZeroDivisionError', 'division by zero', line); return ((l % r) + r) % r; } break;
+            case '**': if (ln && rn) return Math.pow(l, r); break;
+            case '<': return l < r; case '>': return l > r; case '<=': return l <= r; case '>=': return l >= r;
+            case '==': return l === r || (ln && rn && +l === +r); case '!=': return !(l === r || (ln && rn && +l === +r));
+          }
+          throw new PyError('TypeError', `can't do ${fmt(l)} ${e.op} ${fmt(r)}`, line);
+        }
+        case 'call': return call(e, line);
+      }
+      throw new PyError('Error', 'unknown expression', line);
+    }
+
+    function call(e, line) {
+      const target = e.target;
+      if (target.t === 'name' && !(target.n in vars)) {
+        const a = e.args.map(x => evalExpr(x, line));
+        switch (target.n) {
+          case 'int': { const v = a[0]; if (typeof v === 'number') return Math.trunc(v); const s = String(v).trim(); if (!/^[-+]?\d+$/.test(s)) throw new PyError('ValueError', `invalid literal for int() with base 10: ${fmt(v)}`, line); return parseInt(s, 10); }
+          case 'float': { const v = a[0]; if (typeof v === 'number') return v; const n = parseFloat(String(v).trim()); if (isNaN(n)) throw new PyError('ValueError', `could not convert string to float: ${fmt(v)}`, line); return n; }
+          case 'str': return a.map(v => typeof v === 'string' ? v : fmt(v)).join('');
+          case 'abs': return Math.abs(numArg(a[0], 'abs()', line));
+          case 'round': return a.length > 1 ? +numArg(a[0], 'round()', line).toFixed(a[1]) : Math.round(numArg(a[0], 'round()', line));
+          case 'min': return Math.min(...a); case 'max': return Math.max(...a);
+          case 'input': {
+            const prompt = a.length ? (typeof a[0] === 'string' ? a[0] : fmt(a[0])) : '';
+            if (ansI < answers.length) { const ans = answers[ansI++]; ctl(line, exprText(e), `input() — you typed <b>${esc(ans)}</b>. The answer is text; use int() to make it a number.`, null, { out: prompt + ans, input: true }); return ans; }
+            throw new NeedInput(prompt);
+          }
+          case 'range': throw new PyError('SyntaxError', 'range() is only used in a for loop:  for i in range(4):', line);
+          case 'len': throw new PyError('NameError', 'len() needs the full Python engine', line);
+          case 'print': {
+            const out = a.map(v => typeof v === 'string' ? v : fmt(v)).join(' ');
+            ctl(line, exprText(e), `Prints <b>${esc(out)}</b> to the output.`, null, { out });
+            return null;
+          }
+        }
+      }
+      const ctor = n => (n === 'Turtle' || n === 'Pen') ? TURTLE : n === 'Screen' ? { __screen: true } : null;
+      if (target.t === 'attr' && ctor(target.name) && evalExpr(target.obj, line) === TURTLE) return ctor(target.name);
+      if (target.t === 'name' && star && ctor(target.n) && !(target.n in vars)) return ctor(target.n);
+      const fnv = evalExpr(target, line);
+      if (fnv === TURTLE) throw new PyError('TypeError', 'write a turtle command, e.g.  turtle.forward(50)', line);
+      const a = e.args.map(x => evalExpr(x, line));
+      if (fnv && fnv.__tfn) return turtleCmd(fnv.__tfn, a, line, exprText(e));
+      if (fnv && fnv.__rfn) {
+        if (fnv.__rfn === 'randint') { const lo = numArg(a[0], 'randint()', line), hi = numArg(a[1], 'randint()', line); return lo + Math.floor(rnd() * (hi - lo + 1)); }
+        if (fnv.__rfn === 'random') return rnd();
+        if (fnv.__rfn === 'uniform') { const lo = numArg(a[0], 'uniform()', line), hi = numArg(a[1], 'uniform()', line); return lo + rnd() * (hi - lo); }
+        throw new PyError('AttributeError', `random.${fnv.__rfn} needs the full Python engine`, line);
+      }
+      if (fnv && fnv.__mfn) { const v = numArg(a[0], `math.${fnv.__mfn}()`, line); return { sqrt: Math.sqrt, floor: Math.floor, ceil: Math.ceil, sin: Math.sin, cos: Math.cos, tan: Math.tan, radians: x => x * Math.PI / 180, degrees: x => x * 180 / Math.PI }[fnv.__mfn](v); }
+      if (fnv && fnv.__sfn) { ctl(line, exprText(e), `<i>${fnv.__sfn}() is a screen setting — it does nothing in this viewer.</i>`); return null; }
+      throw new PyError('TypeError', `"${exprText(target)}" is not something you can call`, line);
+    }
+
+    function move(x1, y1, line, now, sub) {
+      const moved = Math.hypot(x1 - t.x, y1 - t.y);
+      if (!sub) turtleSteps++;
+      ev.push({ kind: 'move', line, x0: t.x, y0: t.y, x1, y1, heading: t.h, pen: t.pen, color: colorNow(), size: t.size, vars: snap(), n: turtleSteps, now, badge: badgeNow(), badgeColor: colorOf(colorNow()), sub: !!sub,
+        html: sub ? `Part of the circle — ${whereNow()}.` : `Turtle step ${turtleSteps}: ${t.pen ? `draws a line ${+moved.toFixed(1)} steps long` : `moves ${+moved.toFixed(1)} steps with the pen up (no line)`} — ${whereNow()}.` });
+      t.x = x1; t.y = y1;
+    }
+    function turn(h1, line, now, sub) {
+      const d = h1 - t.h;
+      if (!sub) turtleSteps++;
+      ev.push({ kind: 'turn', line, x: t.x, y: t.y, h0: t.h, h1, color: colorNow(), vars: snap(), n: turtleSteps, now, badge: badgeNow(), badgeColor: colorOf(colorNow()), sub: !!sub,
+        html: sub ? `Part of the circle — ${whereNow()}.` : `Turtle step ${turtleSteps}: turns ${Math.abs(+d.toFixed(1))}° ${d >= 0 ? 'anticlockwise' : 'clockwise'}, no line drawn — ${whereNow()}. Now facing ${facing(h1)}.` });
+      t.h = h1;
+    }
+    function turtleCmd(name, a, line, now) {
+      if (turtleSteps >= MAX_TURTLE) throw new PyError('Stopped', `more than ${MAX_TURTLE} turtle commands, so the program was stopped here. If you didn't expect that many, check that your while loop's counter changes.`, line);
+      const need = (n, what) => { if (a.length < n) throw new PyError('TypeError', `${name}() needs ${what}`, line); return a.slice(0, n).map(v => numArg(v, `${name}()`, line)); };
+      const r = t.h * Math.PI / 180;
+      switch (name) {
+        case 'xcor': return t.x;
+        case 'ycor': return t.y;
+        case 'heading': return ((t.h % 360) + 360) % 360;
+        case 'isdown': return t.pen;
+        case 'forward': { const [d] = need(1, 'a distance, e.g. forward(50)'); move(t.x + d * Math.cos(r), t.y + d * Math.sin(r), line, now); return null; }
+        case 'backward': { const [d] = need(1, 'a distance'); move(t.x - d * Math.cos(r), t.y - d * Math.sin(r), line, now); return null; }
+        case 'left': { const [d] = need(1, 'an angle, e.g. left(90)'); turn(t.h + d, line, now); return null; }
+        case 'right': { const [d] = need(1, 'an angle, e.g. right(90)'); turn(t.h - d, line, now); return null; }
+        case 'setheading': { const [d] = need(1, 'an angle'); turn(d, line, now); return null; }
+        case 'goto': { const [x, y] = need(2, 'two numbers: goto(x, y)'); move(x, y, line, now); return null; }
+        case 'setx': { const [x] = need(1, 'a number'); move(x, t.y, line, now); return null; }
+        case 'sety': { const [y] = need(1, 'a number'); move(t.x, y, line, now); return null; }
+        case 'home': move(0, 0, line, now); if (t.h !== 0) turn(0, line, now); return null;
+        case 'circle': {
+          const [rad] = need(1, 'a radius, e.g. circle(40)');
+          const extent = a.length > 1 ? numArg(a[1], 'circle()', line) : 360;
+          const steps = a.length > 2 ? Math.max(1, Math.trunc(numArg(a[2], 'circle()', line))) : 1 + Math.trunc(Math.min(11 + Math.abs(rad) / 6, 59) * Math.abs(extent) / 360);
+          let w = extent / steps, w2 = w / 2, l = 2 * rad * Math.sin(w2 * Math.PI / 180);
+          if (rad < 0) { l = -l; w = -w; w2 = -w2; }
+          turtleSteps++;
+          turn(t.h + w2, line, now, true);
+          for (let i = 0; i < steps; i++) { const rr = t.h * Math.PI / 180; move(t.x + l * Math.cos(rr), t.y + l * Math.sin(rr), line, now, true); turn(t.h + w, line, now, true); }
+          turn(t.h - w2, line, now, true);
+          ev[ev.length - 1].circle_done = String(rad);
+          ev[ev.length - 1].html = `Turtle step ${turtleSteps}: circle of radius ${rad} finished — ${whereNow()}.`;
+          return null;
+        }
+        case 'dot': { const size = a.length ? numArg(a[0], 'dot()', line) : Math.max(t.size + 4, t.size * 2); turtleSteps++; ev.push({ kind: 'dot', line, x: t.x, y: t.y, size, color: colorNow(), vars: snap(), n: turtleSteps, now, badge: badgeNow(), badgeColor: colorOf(colorNow()), html: `Turtle step ${turtleSteps}: draws a dot ${size} wide — ${whereNow()}.` }); return null; }
+        case 'penup': t.pen = false; ctl(line, now, 'Pen up — the turtle will move without drawing until pendown().'); return null;
+        case 'pendown': t.pen = true; ctl(line, now, 'Pen down — the turtle draws again.'); return null;
+        case 'pencolor': {
+          if (!a.length || typeof a[0] !== 'string') throw new PyError('TypeError', 'pencolor() needs a colour name in quotes, e.g. pencolor("red")', line);
+          const c = a[0].trim().toLowerCase();
+          if (!(/^#[0-9a-f]{3}$|^#[0-9a-f]{6}$/.test(c) || (THREE.Color.NAMES && c in THREE.Color.NAMES))) throw new PyError('ValueError', `"${a[0]}" isn't a colour name I know — try red, blue, green, orange, purple, black…`, line);
+          t.color = c; ctl(line, now, `Pen colour is now <b>${esc(a[0])}</b>.`); return null;
+        }
+        case 'pensize': { const [s] = need(1, 'a number'); t.size = Math.max(1, Math.min(10, s)); ctl(line, now, `Pen size is now ${s}.`); return null; }
+        case 'hideturtle': t.visible = false; ctl(line, now, 'The turtle is hidden (it still draws).', null, { visible: false }); return null;
+        case 'showturtle': t.visible = true; ctl(line, now, 'The turtle is shown again.', null, { visible: true }); return null;
+      }
+      if (name === 'write') { ctl(line, now, 'write() puts text on the drawing — shown in the output box here.', null, { out: '✎ ' + (a.length ? (typeof a[0] === 'string' ? a[0] : fmt(a[0])) : '') }); return null; }
+      if (TURTLE_IGNORED.has(name)) { ctl(line, now, `<i>${name}() does nothing in this viewer, but it's fine to leave it in.</i>`); return null; }
+      throw new PyError('AttributeError', `the turtle has no command called "${name}"`, line);
+    }
+
+    function evalCond(e, line) {
+      if (e.t === 'bin' && ['<', '>', '<=', '>=', '==', '!='].includes(e.op)) {
+        const l = evalExpr(e.l, line), r = evalExpr(e.r, line);
+        const ok = evalExpr({ t: 'bin', op: e.op, l: { t: 'num', v: l }, r: { t: 'num', v: r } }, line);
+        return { ok, text: `${fmt(l)} ${e.op} ${fmt(r)}` };
+      }
+      const v = evalExpr(e, line);
+      return { ok: truthy(v), text: exprText(e) + (typeof v === 'boolean' ? '' : ` (which is ${fmt(v)})`) };
+    }
+
+    function run(stmts) {
+      for (const s of stmts) {
+        tick(s.line);
+        switch (s.t) {
+          case 'import': star = star || !!s.star; ctl(s.line, s.star ? 'from turtle import *' : `import ${s.mod}`, s.mod === 'turtle' ? 'Loads the turtle module so the turtle commands are available.' : `Loads the ${s.mod} module.`); break;
+          case 'pass': ctl(s.line, 'pass', 'Does nothing.'); break;
+          case 'break': ctl(s.line, 'break', 'Jumps out of the loop straight away.'); throw BREAK;
+          case 'continue': ctl(s.line, 'continue', 'Skips the rest of this time round the loop.'); throw CONTINUE;
+          case 'assign': {
+            let v = evalExpr(s.expr, s.line);
+            const had = s.name in vars, old = vars[s.name];
+            if (s.op !== '=') {
+              if (!had) throw new PyError('NameError', `"${s.name}" is not defined yet, so it can't be changed with ${s.op}`, s.line);
+              v = evalExpr({ t: 'bin', op: s.op[0], l: { t: 'name', n: s.name }, r: { t: 'num', v } }, s.line);
+            }
+            if (v === null) throw new PyError('TypeError', 'that command does not give back a value to store', s.line);
+            setVar(s.name, v);
+            const show = fmt(v);
+            ctl(s.line, `${s.name} ${s.op} ${exprText(s.expr)}`, had ? `<b>${s.name}</b> is now ${show}${old !== v ? ` (it was ${fmt(old)})` : ' (unchanged)'}.` : `Creates <b>${s.name}</b> and stores ${show} in it.`, s.name);
+            break;
+          }
+          case 'expr': { const r = evalExpr(s.expr, s.line); if (r !== null && r !== undefined && !(r && (r.__turtle || r.__screen))) ctl(s.line, exprText(s.expr), `This gives ${fmt(r)}, but nothing is done with it.`); break; }
+          case 'if': {
+            for (const b of s.branches) {
+              if (b.cond === null) { ctl(b.line, 'else:', 'None of the conditions above were True, so run the else part.'); run(b.body); break; }
+              tick(b.line);
+              const { ok, text } = evalCond(b.cond, b.line);
+              ctl(b.line, `${b === s.branches[0] ? 'if' : 'elif'} ${exprText(b.cond)}:`, `${text} is <b>${ok ? 'True' : 'False'}</b>${ok ? ', so run this block.' : ', so skip this block.'}`);
+              if (ok) { run(b.body); break; }
+            }
+            break;
+          }
+          case 'while': {
+            const frame = { node: s, iter: 0, v: null };
+            loopStack.push(frame);
+            try {
+              for (;;) {
+                tick(s.line);
+                const { ok, text } = evalCond(s.cond, s.line);
+                ctl(s.line, `while ${exprText(s.cond)}:`, `CHECK: ${text} is <b>${ok ? 'True' : 'False'}</b>${ok ? ', so run the body' + (frame.iter ? ` (time ${frame.iter + 1} round this loop)` : '') + '.' : ', so the loop ends.'}`);
+                if (!ok) break;
+                try { run(s.body); } catch (x) { if (x === BREAK) break; if (x !== CONTINUE) throw x; }
+                frame.iter++;
+              }
+            } finally { loopStack.pop(); }
+            break;
+          }
+          case 'for': {
+            const a = s.args.map(x => evalExpr(x, s.line));
+            a.forEach(v => { if (typeof v !== 'number' || !Number.isInteger(v)) throw new PyError('TypeError', `range() needs whole numbers, not ${fmt(v)}`, s.line); });
+            const [start, stop, step] = a.length === 1 ? [0, a[0], 1] : a.length === 2 ? [a[0], a[1], 1] : a;
+            if (step === 0) throw new PyError('ValueError', 'range() step can\'t be 0', s.line);
+            const values = []; for (let v = start; step > 0 ? v < stop : v > stop; v += step) values.push(v);
+            const rtext = `range(${a.join(', ')})`;
+            const frame = { node: s, iter: 0, v: s.v };
+            loopStack.push(frame);
+            try {
+              if (!values.length) ctl(s.line, `for ${s.v} in ${rtext}:`, `${rtext} has no values, so the body never runs.`);
+              for (let i = 0; i < values.length; i++) {
+                tick(s.line);
+                frame.iter = i;
+                setVar(s.v, values[i]);
+                ctl(s.line, `for ${s.v} in ${rtext}:`, `${rtext} gives <b>${s.v} = ${values[i]}</b> (value ${i + 1} of ${values.length}), so run the body.`, s.v);
+                try { run(s.body); } catch (x) { if (x === BREAK) break; if (x !== CONTINUE) throw x; }
+              }
+              if (values.length) { tick(s.line); ctl(s.line, `for ${s.v} in ${rtext}:`, `${rtext} has no values left, so the loop ends.`); }
+            } finally { loopStack.pop(); }
+            break;
+          }
+        }
+      }
+    }
+
+    let error = null, needInput = null;
+    try { run(prog); }
+    catch (x) {
+      if (x instanceof NeedInput) needInput = x.prompt;
+      else if (x === BREAK || x === CONTINUE) error = { name: 'SyntaxError', msg: 'break / continue can only be used inside a loop', line: ev.length ? ev[ev.length - 1].line : 1 };
+      else if (x instanceof PyError) error = { name: x.kind, msg: x.message, line: x.line };
+      else error = { name: 'Error', msg: String(x.message || x), line: 1 };
+    }
+    return { events: ev, error, needInput, turtleSteps, varNames: order.slice() };
+  }
+
+  // =====================================================================
+  //  FULL PYTHON ENGINE — Pyodide (CPython in WebAssembly) with a recording turtle module
+  //  and sys.settrace so every executed line is reported for highlighting.
+  // =====================================================================
+  const PY_RUNTIME = String.raw`
+import sys, math, json, time, random, builtins, types, ast
+
+MAX_LINES = 250000
+MAX_TURTLE = 60000
+MAX_SECONDS = 20
+
+class _StopRun(Exception): pass
+class _NeedInput(Exception):
+    def __init__(self, prompt):
+        Exception.__init__(self, prompt)
+        self.prompt = prompt
+
+class _State: pass
+_r = _State()
+
+def _fmt(v):
+    if isinstance(v, bool): return 'True' if v else 'False'
+    if isinstance(v, int): return str(v)
+    if isinstance(v, float):
+        if v == int(v) and abs(v) < 1e15: return str(int(v))
+        return ('%.4f' % v).rstrip('0').rstrip('.')
+    return repr(v)
+
+def _student_frame():
+    f = sys._getframe(1)
+    while f is not None and f.f_code.co_filename != '<student>':
+        f = f.f_back
+    return f
+
+def _student_line():
+    f = _student_frame()
+    return f.f_lineno if f is not None else 0
+
+def _snapshot(frame):
+    out = {}
+    n = 0
+    for k, v in frame.f_locals.items():
+        if k.startswith('_'): continue
+        if isinstance(v, (types.ModuleType, types.FunctionType, types.BuiltinFunctionType, type)): continue
+        if isinstance(v, _Turtle): s = 'turtle'
+        elif isinstance(v, Turtle3D): s = 'Turtle3D'
+        elif isinstance(v, _Screen): s = 'screen'
+        elif isinstance(v, (bool, int, float, str)): s = _fmt(v)
+        elif isinstance(v, (list, tuple, dict, set)): s = repr(v)
+        else: s = type(v).__name__
+        if len(s) > 40: s = s[:37] + '...'
+        out[k] = s
+        n += 1
+        if n >= 16: break
+    return out
+
+def _color_at(frame, line):
+    if _r.pen_color is not None: return _r.pen_color
+    if frame is None or frame.f_code.co_name != '<module>': return -1
+    for lp in _r.outer:
+        if lp['line'] <= line <= lp['end']:
+            if lp['has_nested']:
+                for s, e in lp['inner']:
+                    if s <= line <= e: return lp['iter']
+                return -1
+            return lp['iter']
+    return -1
+
+def _emit(ev):
+    _r.events.append(ev)
+
+class _Out:
+    def __init__(self): self.buf = ''
+    def write(self, s):
+        self.buf += str(s)
+        while '\n' in self.buf:
+            line, self.buf = self.buf.split('\n', 1)
+            _emit({'kind': 'ctl', 'line': _student_line(), 'out': line})
+        return len(s)
+    def flush(self): pass
+    def flush_partial(self):
+        if self.buf:
+            _emit({'kind': 'ctl', 'line': _student_line(), 'out': self.buf})
+            self.buf = ''
+
+def _input(prompt=''):
+    prompt = str(prompt)
+    sys.stdout.flush_partial()
+    if _r.ans_i < len(_r.answers):
+        a = _r.answers[_r.ans_i]
+        _r.ans_i += 1
+        _emit({'kind': 'ctl', 'line': _student_line(), 'out': prompt + a, 'input': True, 'answer': a})
+        return a
+    raise _NeedInput(prompt)
+builtins.input = _input
+
+def _sleep(seconds=0):
+    s = max(0.0, float(seconds))
+    _emit({'kind': 'ctl', 'line': _student_line(), 'sleep': s, 'html': 'Waits %s seconds (time.sleep). The animation pauses for that long instead of the program freezing.' % _fmt(s)})
+time.sleep = _sleep
+
+def _tracer(frame, event, arg):
+    if frame.f_code.co_filename != '<student>': return None
+    if event == 'line':
+        _r.lines += 1
+        if _r.lines > MAX_LINES:
+            raise _StopRun('the program ran %d lines and was still going - a loop probably never ends. Check that the while loop counter changes.' % MAX_LINES)
+        if _r.lines % 500 == 0 and time.time() - _r.t0 > MAX_SECONDS:
+            raise _StopRun('the program took more than %d seconds, so it was stopped.' % MAX_SECONDS)
+        sys.stdout.flush_partial()
+        ln = frame.f_lineno
+        snap = _snapshot(frame)
+        ev = {'kind': 'ctl', 'line': ln}
+        if snap != _r.last_vars:
+            _r.last_vars = snap
+            ev['vars'] = snap
+        if frame.f_code.co_name == '<module>':
+            lp = _r.loop_by_line.get(ln)
+            if lp is not None:
+                lp['iter'] += 1
+                ev['iter'] = lp['iter']; ev['loop'] = lp['kind']; ev['var'] = lp['var']; ev['end'] = lp['end']
+        _emit(ev)
+    return _tracer
+
+def _collect(nodes, depth, in_func, acc):
+    found = []
+    for node in nodes:
+        if isinstance(node, (ast.FunctionDef, ast.AsyncFunctionDef, ast.ClassDef)):
+            _collect(node.body, 0, True, acc)
+            continue
+        if isinstance(node, (ast.For, ast.While)):
+            lp = {'line': node.lineno, 'end': node.end_lineno, 'kind': 'for' if isinstance(node, ast.For) else 'while',
+                  'var': node.target.id if isinstance(node, ast.For) and isinstance(node.target, ast.Name) else None,
+                  'iter': -1, 'outer': depth == 0 and not in_func, 'inner': [], 'has_nested': False}
+            acc.append(lp); found.append(lp)
+            nested = _collect(node.body + node.orelse, depth + 1, in_func, acc)
+            lp['has_nested'] = len(nested) > 0
+            lp['inner'] = [[n['line'], n['end']] for n in nested]
+            continue
+        for field in ('body', 'orelse', 'finalbody', 'handlers', 'cases'):
+            b = getattr(node, field, None)
+            if b: found += _collect(b, depth, in_func, acc)
+    return found
+
+# ---- the recording turtle -------------------------------------------------
+def _move_to(x1, y1, sub=False):
+    f = _student_frame(); ln = f.f_lineno if f else 0
+    if not sub:
+        _r.steps += 1
+        if _r.steps > MAX_TURTLE: raise _StopRun('more than %d turtle commands, so the program was stopped here. If you did not expect that many, check that your while loop counter changes.' % MAX_TURTLE)
+    _emit({'kind': 'move', 'line': ln, 'x0': _r.x, 'y0': _r.y, 'x1': x1, 'y1': y1, 'heading': _r.h, 'pen': _r.pen,
+           'color': _color_at(f, ln), 'size': _r.size, 'n': _r.steps, 'sub': sub})
+    _r.x, _r.y = round(float(x1), 9), round(float(y1), 9)
+
+def _turn_to(h1, sub=False):
+    f = _student_frame(); ln = f.f_lineno if f else 0
+    if not sub:
+        _r.steps += 1
+        if _r.steps > MAX_TURTLE: raise _StopRun('more than %d turtle commands, so the program was stopped here.' % MAX_TURTLE)
+    _emit({'kind': 'turn', 'line': ln, 'x': _r.x, 'y': _r.y, 'h0': _r.h, 'h1': h1, 'color': _color_at(f, ln), 'n': _r.steps, 'sub': sub})
+    _r.h = round(float(h1), 9)
+
+def _ctl(html, **extra):
+    ev = {'kind': 'ctl', 'line': _student_line(), 'html': html}
+    ev.update(extra)
+    _emit(ev)
+
+def _num(v): return float(v)
+
+def forward(distance):
+    d = _num(distance); r = math.radians(_r.h)
+    _move_to(_r.x + d * math.cos(r), _r.y + d * math.sin(r))
+def backward(distance): forward(-_num(distance))
+def left(angle): _turn_to(_r.h + _num(angle))
+def right(angle): _turn_to(_r.h - _num(angle))
+def setheading(angle): _turn_to(_num(angle))
+def goto(x, y=None):
+    if y is None: x, y = x
+    _move_to(_num(x), _num(y))
+def setx(x): _move_to(_num(x), _r.y)
+def sety(y): _move_to(_r.x, _num(y))
+def home():
+    _move_to(0.0, 0.0)
+    if _r.h != 0: _turn_to(0.0)
+def penup(): _r.pen = False; _ctl('Pen up - the turtle will move without drawing until pendown().')
+def pendown(): _r.pen = True; _ctl('Pen down - the turtle draws again.')
+def isdown(): return _r.pen
+def xcor(): return _r.x
+def ycor(): return _r.y
+def position(): return (_r.x, _r.y)
+pos = position
+def heading(): return _r.h % 360
+def distance(x, y=None):
+    if y is None: x, y = x
+    return math.hypot(_num(x) - _r.x, _num(y) - _r.y)
+def towards(x, y=None):
+    if y is None: x, y = x
+    return math.degrees(math.atan2(_num(y) - _r.y, _num(x) - _r.x)) % 360
+def _to_css(c, *rest):
+    if rest: c = (c,) + rest
+    if isinstance(c, (tuple, list)) and len(c) == 3:
+        mx = max(c)
+        scale = 1 if mx > 1 else 255
+        return '#%02x%02x%02x' % tuple(max(0, min(255, int(round(float(v) * scale)))) for v in c)
+    return str(c).strip().lower()
+def pencolor(*args):
+    if not args: return _r.pen_color or 'black'
+    _r.pen_color = _to_css(*args)
+    _ctl('Pen colour is now <b>%s</b>.' % _r.pen_color)
+def color(*args):
+    if not args: return (_r.pen_color or 'black', _r.pen_color or 'black')
+    pencolor(args[0])
+def pensize(width=None):
+    if width is None: return _r.size
+    _r.size = max(1, min(10, _num(width)))
+    _ctl('Pen size is now %s.' % _fmt(_r.size))
+width = pensize
+def hideturtle(): _r.visible = False; _ctl('The turtle is hidden (it still draws).', visible=False)
+def showturtle(): _r.visible = True; _ctl('The turtle is shown again.', visible=True)
+def isvisible(): return _r.visible
+def circle(radius, extent=None, steps=None):
+    radius = _num(radius)
+    if extent is None: extent = 360.0
+    extent = _num(extent)
+    if steps is None:
+        frac = abs(extent) / 360.0
+        steps = 1 + int(min(11 + abs(radius) / 6.0, 59.0) * frac)
+    steps = max(1, int(steps))
+    w = 1.0 * extent / steps
+    w2 = 0.5 * w
+    l = 2.0 * radius * math.sin(w2 * math.pi / 180.0)
+    if radius < 0: l, w, w2 = -l, -w, -w2
+    _r.steps += 1
+    if _r.steps > MAX_TURTLE: raise _StopRun('more than %d turtle commands, so the program was stopped here.' % MAX_TURTLE)
+    _turn_to(_r.h + w2, True)
+    for i in range(steps):
+        r = math.radians(_r.h)
+        _move_to(_r.x + l * math.cos(r), _r.y + l * math.sin(r), True)
+        _turn_to(_r.h + w, True)
+    _turn_to(_r.h - w2, True)
+    _r.events[-1]['circle_done'] = _fmt(radius)
+def dot(size=None, *color):
+    if size is None: size = max(_r.size + 4, _r.size * 2)
+    f = _student_frame(); ln = f.f_lineno if f else 0
+    _r.steps += 1
+    _emit({'kind': 'dot', 'line': ln, 'x': _r.x, 'y': _r.y, 'size': _num(size), 'color': _to_css(color[0]) if color else _color_at(f, ln), 'n': _r.steps})
+def write(arg, move=False, align='left', font=None):
+    _emit({'kind': 'write', 'line': _student_line(), 'x': _r.x, 'y': _r.y, 'z': 0.0, 'text': str(arg), 'color': _r.pen_color or '#111827'})
+def _ignored(name):
+    def f(*a, **k): _ctl('<i>%s() does nothing in this viewer, but it is fine to leave it in.</i>' % name)
+    f.__name__ = name
+    return f
+_IGNORED = ['speed', 'shape', 'bgcolor', 'done', 'mainloop', 'exitonclick', 'title', 'tracer', 'update', 'delay', 'screensize',
+            'setup', 'shapesize', 'turtlesize', 'fillcolor', 'begin_fill', 'end_fill', 'clear', 'reset', 'bye', 'colormode',
+            'stamp', 'listen', 'onkey', 'onkeypress', 'onclick', 'ontimer', 'degrees', 'radians', 'resizemode',
+            'clearstamps', 'undo', 'mode', 'bgpic', 'textinput', 'numinput']
+for _n in _IGNORED:
+    globals()[_n] = _ignored(_n)
+fd, bk, back, lt, rt = forward, backward, backward, left, right
+pu, up, pd, down = penup, penup, pendown, pendown
+seth, setpos, setposition, ht, st = setheading, goto, goto, hideturtle, showturtle
+
+class _Screen:
+    def __getattr__(self, name): return _ignored(name)
+class _Turtle:
+    def __init__(self, *a, **k): pass
+    def __getattr__(self, name):
+        g = _turtle_mod.__dict__.get(name)
+        if g is None or not callable(g): raise AttributeError("'Turtle' object has no attribute '%s'" % name)
+        return g
+def Turtle(*a, **k): return _Turtle()
+Pen = RawTurtle = RawPen = Turtle
+def Screen(): return _Screen()
+TurtleScreen = Screen
+def getscreen(): return _Screen()
+
+_turtle_mod = types.ModuleType('turtle')
+_exports = ['forward', 'backward', 'left', 'right', 'setheading', 'goto', 'setx', 'sety', 'home', 'penup', 'pendown', 'isdown',
+            'xcor', 'ycor', 'position', 'pos', 'heading', 'distance', 'towards', 'pencolor', 'color', 'pensize', 'width',
+            'hideturtle', 'showturtle', 'isvisible', 'circle', 'dot', 'write', 'fd', 'bk', 'back', 'lt', 'rt', 'pu', 'up', 'pd',
+            'down', 'seth', 'setpos', 'setposition', 'ht', 'st', 'Turtle', 'Pen', 'RawTurtle', 'RawPen', 'Screen', 'TurtleScreen',
+            'getscreen'] + _IGNORED
+for _n in _exports:
+    setattr(_turtle_mod, _n, globals()[_n])
+_turtle_mod.__all__ = _exports
+sys.modules['turtle'] = _turtle_mod
+
+# ---- turtles3D emulation: a turtle with x, y, z and a whole-drawing rotation --------------
+class Turtle3D:
+    def __init__(self, *a, **k):
+        self.x = self.y = self.z = 0.0; self.h = 0.0; self.p = 0.0
+        self.pen = True; self.col = None; self.size = 1; self.vis = True
+    def _count(self):
+        _r.steps += 1
+        if _r.steps > MAX_TURTLE: raise _StopRun('more than %d turtle commands, so the program was stopped here.' % MAX_TURTLE)
+    def _colour(self, f, ln): return self.col if self.col is not None else _color_at(f, ln)
+    def _move(self, x1, y1, z1):
+        f = _student_frame(); ln = f.f_lineno if f else 0
+        self._count()
+        _emit({'kind': 'move', 'line': ln, 'x0': self.x, 'y0': self.y, 'z0': self.z, 'x1': x1, 'y1': y1, 'z1': z1, 'heading': self.h, 'pitch': self.p,
+               'pen': self.pen, 'color': self._colour(f, ln), 'size': self.size, 'n': _r.steps, 'd3': True})
+        self.x, self.y, self.z = round(float(x1), 9), round(float(y1), 9), round(float(z1), 9)
+    def _turn(self, h1, p1):
+        f = _student_frame(); ln = f.f_lineno if f else 0
+        self._count()
+        _emit({'kind': 'turn', 'line': ln, 'x': self.x, 'y': self.y, 'z': self.z, 'h0': self.h, 'h1': h1, 'p0': self.p, 'p1': p1, 'color': self._colour(f, ln), 'n': _r.steps, 'd3': True})
+        self.h, self.p = round(float(h1), 9), round(float(p1), 9)
+    def pos(self): return (self.x, self.y, self.z)
+    position = pos
+    def goto(self, x, y=None, z=None):
+        if isinstance(x, (list, tuple)):
+            pts = list(x) + [0.0, 0.0, 0.0]
+            x, y, z = pts[0], pts[1], pts[2]
+        if y is None: y = self.y
+        if z is None: z = self.z
+        self._move(float(x), float(y), float(z))
+    setpos = setposition = goto
+    def setx(self, x): self._move(float(x), self.y, self.z)
+    def sety(self, y): self._move(self.x, float(y), self.z)
+    setyy = sety
+    def setz(self, z): self._move(self.x, self.y, float(z))
+    def forward(self, distance):
+        d = float(distance); ch = math.cos(math.radians(self.p))
+        self._move(self.x + d * ch * math.cos(math.radians(self.h)), self.y + d * ch * math.sin(math.radians(self.h)), self.z + d * math.sin(math.radians(self.p)))
+    fd = forward
+    def backward(self, distance): self.forward(-float(distance))
+    back = bk = backward
+    def left(self, angle): self._turn(self.h + float(angle), self.p)
+    lt = left
+    def right(self, angle): self._turn(self.h - float(angle), self.p)
+    rt = right
+    def yup(self, angle): self._turn(self.h, self.p + float(angle))
+    def ydown(self, angle): self._turn(self.h, self.p - float(angle))
+    xup = yup
+    xdown = ydown
+    def setheading(self, XY_angle, Z_angle=None): self._turn(float(XY_angle), self.p if Z_angle is None else float(Z_angle))
+    seth = setheading
+    def heading(self): return (self.h % 360, self.p)
+    def home(self):
+        self._move(0.0, 0.0, 0.0)
+        if self.h != 0 or self.p != 0: self._turn(0.0, 0.0)
+    def xcor(self): return self.x
+    def ycor(self): return self.y
+    def zcor(self): return self.z
+    def penup(self): self.pen = False; _ctl('Pen up - the turtle will move without drawing until pendown().')
+    pu = up = penup
+    def pendown(self): self.pen = True; _ctl('Pen down - the turtle draws again.')
+    pd = down = pendown
+    def isdown(self): return self.pen
+    def pencolor(self, *args):
+        if not args: return self.col or 'black'
+        self.col = _to_css(*args)
+        _ctl('Pen colour is now <b>%s</b>.' % self.col)
+    def color(self, *args):
+        if not args: return (self.col or 'black', self.col or 'black')
+        self.pencolor(args[0])
+    def pensize(self, width=None):
+        if width is None: return self.size
+        self.size = max(1, min(10, float(width)))
+        _ctl('Pen size is now %s.' % _fmt(self.size))
+    width = pensize
+    def hideturtle(self): self.vis = False; _ctl('The turtle is hidden (it still draws).', visible=False)
+    ht = hideturtle
+    def showturtle(self): self.vis = True; _ctl('The turtle is shown again.', visible=True)
+    st = showturtle
+    def isvisible(self): return self.vis
+    def dot(self, size=None, *color):
+        if size is None: size = max(self.size + 4, self.size * 2)
+        f = _student_frame(); ln = f.f_lineno if f else 0
+        self._count()
+        _emit({'kind': 'dot', 'line': ln, 'x': self.x, 'y': self.y, 'z': self.z, 'size': float(size), 'color': _to_css(color[0]) if color else self._colour(f, ln), 'n': _r.steps, 'd3': True})
+    def write(self, arg, *a, **k):
+        _emit({'kind': 'write', 'line': _student_line(), 'x': self.x, 'y': self.y, 'z': self.z, 'text': str(arg), 'color': self.col or '#111827', 'd3': True})
+    def _rotate(self, axis, angle, redraw):
+        self._count()
+        _emit({'kind': 'rot', 'line': _student_line(), 'axis': axis, 'deg': float(angle), 'redraw': bool(redraw), 'n': _r.steps, 'd3': True})
+    def rotateX(self, angle, redraw=True): self._rotate('x', angle, redraw)
+    def rotateY(self, angle, redraw=True): self._rotate('y', angle, redraw)
+    def rotateZ(self, angle, redraw=True): self._rotate('z', angle, redraw)
+    def getscreen(self): return _Screen()
+    def clone(self):
+        c = Turtle3D(); c.__dict__.update(self.__dict__); return c
+    def __getattr__(self, name):
+        if name in _IGNORED or name in ('stamp', 'clearstamps', 'clearstamp', 'undo', 'clear', 'reset', 'filling', 'onrelease', 'ondrag'):
+            return _ignored(name)
+        raise AttributeError("'Turtle3D' object has no attribute '%s'" % name)
+
+_t3d_mod = types.ModuleType('turtles3D')
+_t3d_mod.Turtle3D = Turtle3D
+_t3d_mod.__all__ = ['Turtle3D']
+sys.modules['turtles3D'] = _t3d_mod
+sys.modules['turtle3D'] = _t3d_mod
+
+def _line_from_tb(tb):
+    ln = None
+    while tb is not None:
+        if tb.tb_frame.f_code.co_filename == '<student>': ln = tb.tb_lineno
+        tb = tb.tb_next
+    return ln
+
+def _run(src, answers_json, seed):
+    _r.events = []; _r.x = 0.0; _r.y = 0.0; _r.h = 0.0; _r.pen = True; _r.pen_color = None; _r.size = 1; _r.visible = True
+    _r.steps = 0; _r.lines = 0; _r.answers = json.loads(answers_json); _r.ans_i = 0; _r.t0 = time.time(); _r.last_vars = {}
+    _r.loops = []; _r.outer = []; _r.loop_by_line = {}
+    random.seed(int(seed))
+    error = None; need_input = None
+    old_out = sys.stdout
+    sys.stdout = _Out()
+    try:
+        tree = ast.parse(src, '<student>')
+        _collect(tree.body, 0, False, _r.loops)
+        _r.outer = [l for l in _r.loops if l['outer']]
+        _r.loop_by_line = dict((l['line'], l) for l in _r.loops)
+        code = compile(tree, '<student>', 'exec')
+        g = {'__name__': '__main__'}
+        sys.settrace(_tracer)
+        try:
+            exec(code, g)
+        finally:
+            sys.settrace(None)
+    except _NeedInput as e:
+        need_input = e.prompt
+    except _StopRun as e:
+        error = {'name': 'Stopped', 'msg': str(e), 'line': _r.events[-1]['line'] if _r.events else 1}
+    except SyntaxError as e:
+        error = {'name': type(e).__name__, 'msg': e.msg, 'line': e.lineno or 1}
+    except BaseException as e:
+        ln = _line_from_tb(e.__traceback__) or (_r.events[-1]['line'] if _r.events else 1)
+        error = {'name': type(e).__name__, 'msg': str(e), 'line': ln}
+    finally:
+        try: sys.stdout.flush_partial()
+        except Exception: pass
+        sys.stdout = old_out
+    return json.dumps({'events': _r.events, 'error': error, 'need_input': need_input, 'turtle_steps': _r.steps,
+                       'loops': [{'line': l['line'], 'end': l['end'], 'kind': l['kind'], 'var': l['var']} for l in _r.loops]})
+`;
+
+  let pyodide = null, pyRun = null, pyState = 'idle', pyPromise = null;   // idle | loading | ready | failed
+  function loadPyodideEngine() {
+    if (pyPromise) return pyPromise;
+    pyState = 'loading'; updateEngineLabel();
+    pyPromise = (async () => {
+      try {
+        if (typeof loadPyodide !== 'function') {
+          await new Promise((res, rej) => { const s = document.createElement('script'); s.src = PYODIDE_URL + 'pyodide.js'; s.onload = res; s.onerror = () => rej(new Error('could not download pyodide.js')); document.head.appendChild(s); });
+        }
+        pyodide = await loadPyodide({ indexURL: PYODIDE_URL });
+        pyodide.runPython(PY_RUNTIME);
+        pyRun = pyodide.globals.get('_run');
+        pyState = 'ready';
+      } catch (e) { console.warn('Pyodide unavailable, using the basic engine:', e); pyState = 'failed'; }
+      updateEngineLabel();
+    })();
+    return pyPromise;
+  }
+  function runPyodide(src, answers, seed) {
+    const r = JSON.parse(pyRun(src, JSON.stringify(answers), seed));
+    return { events: r.events, error: r.error, needInput: r.need_input, turtleSteps: r.turtle_steps, loops: r.loops };
+  }
+
+  // Fill in display fields (now / badge / html / state-after) for raw engine events.
+  function decorateEvents(result, srcLines) {
+    // A traced "about to run line N" event followed by a turtle/print/pen event on the same line is just
+    // bookkeeping — drop it so one line = one step, like the basic engine and the worked examples.
+    const raw = result.events;
+    const ev = raw.filter((e, i) => {
+      if (!(e.kind === 'ctl' && e.out === undefined && !e.html)) return true;
+      const nx = raw[i + 1];
+      return !(nx && nx.line === e.line && !(nx.kind === 'ctl' && nx.out === undefined && !nx.html) && nx.kind !== 'error');
+    });
+    const loopVarsAll = (result.loops || []).map(l => l.var).filter(Boolean);
+    const varOrder = result.varNames ? result.varNames.slice() : [];
+    for (const e of ev) if (e.vars) for (const k of Object.keys(e.vars)) if (!varOrder.includes(k)) varOrder.push(k);
+    let lastVars = {};
+    for (const e of ev) { if (e.vars) lastVars = e.vars; else e.vars = lastVars; }   // engines only send a snapshot when something changed
+    const srcAt = n => (srcLines[n - 1] || '').trim();
+    const isLine = e => e.kind === 'ctl' && e.out === undefined && !e.html;    // a traced "about to run this line" event
+    const nextLine = i => { for (let j = i + 1; j < ev.length; j++) if (ev[j].kind !== 'error' && ev[j].vars) return ev[j]; return null; };   // next thing that executes
+    for (let i = 0; i < ev.length; i++) {
+      const e = ev[i];
+      const src = srcAt(e.line);
+      if (e.now === undefined) e.now = src || `line ${e.line}`;
+      if (e.kind === 'ctl') {
+        if (!e.badge) e.badge = `line ${e.line}`;
+        if (isLine(e)) {
+          const nx = nextLine(i);
+          const after = nx ? nx.vars : e.vars;
+          let changed = null, prevVal;
+          for (const k of Object.keys(after)) if (after[k] !== e.vars[k]) { changed = k; prevVal = e.vars[k]; break; }
+          if (e.loop) {
+            const inside = nx && nx.line > e.line && nx.line <= e.end;
+            if (e.loop === 'for') e.html = inside ? `The for loop gives <b>${esc(e.var)} = ${esc(after[e.var] !== undefined ? after[e.var] : '?')}</b> (time ${e.iter + 1} round this loop), so run the body.` : 'The for loop has no values left, so it ends.';
+            else e.html = inside ? `CHECK: the while condition is <b>True</b>${e.iter ? ` (time ${e.iter + 1} round this loop)` : ''}, so run the body.` : 'CHECK: the while condition is <b>False</b>, so the loop ends.';
+          }
+          else if (changed) e.html = `<b>${esc(changed)}</b> is now ${esc(after[changed])}${prevVal !== undefined ? ` (it was ${esc(prevVal)})` : ''}.`;
+          else if (/^(import|from)\b/.test(src)) e.html = 'Loads a module so its commands are available.';
+          else if (/^def\b/.test(src)) e.html = 'Defines a function — nothing runs until it is called.';
+          else if (/^(if|elif)\b/.test(src)) e.html = nx && nx.line === e.line + 1 ? 'The condition is <b>True</b>, so run this block.' : 'Checks the condition.';
+          else if (/^else\b/.test(src)) e.html = 'None of the conditions above were True, so run the else part.';
+          else if (/^return\b/.test(src)) e.html = 'Returns from the function.';
+          else if (/^(while|for)\b/.test(src)) e.html = 'Loop line.';
+          else e.html = 'Runs this line.';
+          e.changed = changed || undefined;
+          e.vars = after;
+        } else if (!e.html) {
+          e.html = e.out === undefined ? 'Runs this line.' : (e.input ? `input() — you typed <b>${esc(e.answer !== undefined ? e.answer : e.out)}</b>. The answer is text; use int() to make it a number.` : `Prints <b>${esc(e.out)}</b> to the output.`);
+        }
+      } else if (e.kind === 'rot') {
+        if (!e.badge) e.badge = 'turtles3D';
+        e.badgeColor = '#7c3aed';
+        e.html = `Turtle step ${e.n}: rotates the whole drawing ${+e.deg.toFixed(2)}° about the ${e.axis.toUpperCase()} axis${e.redraw ? '.' : ' — but with redraw=False, so the picture only updates at the next rotate call that redraws.'}`;
+      } else if (e.kind === 'write') {
+        if (!e.badge) e.badge = 'turtle';
+        e.html = `Writes <b>${esc(e.text)}</b> on the drawing at the turtle's position.`;
+      } else if (e.kind === 'move' || e.kind === 'turn' || e.kind === 'dot') {
+        const inLoop = loopVarsAll.filter(v => e.vars && v in e.vars).map(v => `${v} = ${e.vars[v]}`);
+        if (!e.badge) e.badge = inLoop.length ? inLoop.join(' · ') : 'turtle';
+        if (!e.badgeColor) e.badgeColor = colorOf(e.color);
+        if (!e.html) {
+          if (e.sub) e.html = e.circle_done ? `Turtle step ${e.n}: circle of radius ${e.circle_done} finished.` : 'Part of the circle.';
+          else if (e.kind === 'move') { const d = Math.hypot(e.x1 - e.x0, e.y1 - e.y0, (e.z1 || 0) - (e.z0 || 0)); e.html = `Turtle step ${e.n}: ${e.pen ? `draws a line ${+d.toFixed(1)} steps long` : `moves ${+d.toFixed(1)} steps with the pen up (no line)`}${e.d3 ? ` to (${+e.x1.toFixed(1)}, ${+e.y1.toFixed(1)}, ${+e.z1.toFixed(1)})` : ''}.`; }
+          else if (e.kind === 'turn') { const d = e.h1 - e.h0; e.html = `Turtle step ${e.n}: turns ${Math.abs(+d.toFixed(1))}° ${d >= 0 ? 'anticlockwise' : 'clockwise'}, no line drawn. Now facing ${facing(e.h1)}.`; }
+          else e.html = `Turtle step ${e.n}: draws a dot ${e.size} wide.`;
+        }
+      }
+    }
+    if (result.error) {
+      const er = result.error;
+      ev.push({ kind: 'error', line: er.line, now: `${er.name} on line ${er.line}`, html: esc(er.msg), vars: ev.length ? ev[ev.length - 1].vars : {}, badge: 'error' });
+    }
+    return { trace: ev, turtleSteps: result.turtleSteps, varNames: varOrder };
+  }
+
+  // =====================================================================
+  //  THREE.JS SCENE
+  // =====================================================================
   const wrap = document.getElementById('view-wrap');
   const view = document.getElementById('view');
   const renderer = new THREE.WebGLRenderer({ antialias: true });
@@ -300,15 +1540,14 @@
   view.appendChild(renderer.domElement);
 
   const scene = new THREE.Scene();
-  const camera = new THREE.PerspectiveCamera(38, 1, 5, 4000);
+  const camera = new THREE.PerspectiveCamera(38, 1, 5, 6000);
   const controls = new THREE.OrbitControls(camera, renderer.domElement);
   controls.enableDamping = true;
   controls.dampingFactor = 0.08;
   controls.maxPolarAngle = Math.PI / 2 - 0.04;
 
-  // graph paper: a repeating canvas texture (10 turtle steps per square, darker line every 50)
   function makeGridTexture() {
-    const c = document.createElement('canvas'); c.width = c.height = 320;   // one tile = 50 x 50 steps
+    const c = document.createElement('canvas'); c.width = c.height = 320;
     const g = c.getContext('2d');
     g.fillStyle = '#ffffff'; g.fillRect(0, 0, 320, 320);
     g.strokeStyle = '#e4e7eb'; g.lineWidth = 2;
@@ -317,15 +1556,15 @@
     g.strokeRect(1.5, 1.5, 317, 317);
     const tex = new THREE.CanvasTexture(c);
     tex.wrapS = tex.wrapT = THREE.RepeatWrapping;
-    tex.repeat.set(24, 24);
+    tex.repeat.set(80, 80);
     tex.anisotropy = renderer.capabilities.getMaxAnisotropy();
     return tex;
   }
-  // unlit paper keeps the grid colours exact; a transparent shadow-catcher sits just above it
-  const paper = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.MeshBasicMaterial({ map: makeGridTexture() }));
+  const PAPER = 4000;
+  const paper = new THREE.Mesh(new THREE.PlaneGeometry(PAPER, PAPER), new THREE.MeshBasicMaterial({ map: makeGridTexture() }));
   paper.rotation.x = -Math.PI / 2;
   scene.add(paper);
-  const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(1200, 1200), new THREE.ShadowMaterial({ opacity: 0.16 }));
+  const shadowCatcher = new THREE.Mesh(new THREE.PlaneGeometry(PAPER, PAPER), new THREE.ShadowMaterial({ opacity: 0.16 }));
   shadowCatcher.rotation.x = -Math.PI / 2;
   shadowCatcher.position.y = 0.05;
   shadowCatcher.receiveShadow = true;
@@ -336,15 +1575,29 @@
   sun.position.set(140, 300, 180);
   sun.castShadow = true;
   sun.shadow.mapSize.set(2048, 2048);
-  sun.shadow.camera.left = -300; sun.shadow.camera.right = 300;
-  sun.shadow.camera.top = 300; sun.shadow.camera.bottom = -300;
-  sun.shadow.camera.far = 1200;
+  sun.shadow.camera.left = -400; sun.shadow.camera.right = 400;
+  sun.shadow.camera.top = 400; sun.shadow.camera.bottom = -400;
+  sun.shadow.camera.far = 1500;
   scene.add(sun);
 
   const marker = new THREE.Mesh(new THREE.RingGeometry(2.4, 3.8, 40), new THREE.MeshBasicMaterial({ color: 0x6b7280, side: THREE.DoubleSide }));
   marker.rotation.x = -Math.PI / 2;
   marker.position.y = 0.6;
   scene.add(marker);
+
+  // Everything the program draws (and the turtle) lives in this group, so turtles3D's rotateX/Y/Z can spin the whole drawing.
+  // Model axes → scene: x → x, y → -z (up the page), z → y (out of the page).
+  const drawGroup = new THREE.Group();
+  scene.add(drawGroup);
+  const AXIS3 = { x: new THREE.Vector3(1, 0, 0), y: new THREE.Vector3(0, 0, -1), z: new THREE.Vector3(0, 1, 0) };
+  const pendingRot = new THREE.Quaternion();
+  const toScene = (x, y, z) => new THREE.Vector3(x, z || 0, -y);
+  let is3D = false;
+  function set3DMode(on) {
+    is3D = on;
+    paper.material.transparent = on; paper.material.opacity = on ? 0.55 : 1; paper.material.depthWrite = !on; paper.material.needsUpdate = true;
+    shadowCatcher.visible = !on;
+  }
 
   function makeTurtle() {
     const g = new THREE.Group();
@@ -357,55 +1610,91 @@
     rim.scale.set(1.18, 1, 1); rim.position.y = 1.5; rim.castShadow = true; g.add(rim);
     const head = new THREE.Mesh(new THREE.SphereGeometry(2.3, 20, 14), skinMat);
     head.position.set(7.2, 2.4, 0); head.castShadow = true; g.add(head);
-    for (const z of [-1.1, 1.1]) {
-      const eye = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), eyeMat);
-      eye.position.set(9.1, 3.1, z); g.add(eye);
-    }
+    for (const z of [-1.1, 1.1]) { const eye = new THREE.Mesh(new THREE.SphereGeometry(0.5, 10, 8), eyeMat); eye.position.set(9.1, 3.1, z); g.add(eye); }
     for (const [sx, sz] of [[3.8, 5.0], [3.8, -5.0], [-3.8, 5.0], [-3.8, -5.0]]) {
       const leg = new THREE.Mesh(new THREE.SphereGeometry(1.6, 12, 10), skinMat);
       leg.position.set(sx, 1.2, sz); leg.castShadow = true; g.add(leg);
     }
     const tail = new THREE.Mesh(new THREE.ConeGeometry(1.1, 3.2, 10), skinMat);
     tail.rotation.z = Math.PI / 2; tail.position.set(-7.2, 1.6, 0); g.add(tail);
-    // pen: a small dark dot under the turtle's centre
     const pen = new THREE.Mesh(new THREE.CylinderGeometry(0.9, 0.9, 1.2, 12), eyeMat);
     pen.position.y = 0.6; g.add(pen);
     return g;
   }
   const turtle = makeTurtle();
   turtle.scale.setScalar(0.85);
-  scene.add(turtle);
+  turtle.rotation.order = 'YZX';
+  drawGroup.add(turtle);
 
   const segGeo = new THREE.BoxGeometry(1, 1.5, 2.6);
   segGeo.translate(0.5, 0, 0);
-  function makeSegment(e) {
-    const mat = new THREE.MeshStandardMaterial({ color: new THREE.Color(colorOf(e.color)), roughness: 0.45, emissive: new THREE.Color(colorOf(e.color)), emissiveIntensity: 0.35 });
+  const dotGeo = new THREE.SphereGeometry(0.5, 20, 14);
+  const X_UNIT = new THREE.Vector3(1, 0, 0);
+  function safeColor(c) { try { return new THREE.Color(colorOf(c)); } catch (e) { return new THREE.Color(GREY); } }
+  function makeSegment(e, order) {
+    const col = safeColor(e.color);
+    const mat = new THREE.MeshStandardMaterial({ color: col, roughness: 0.45, emissive: col, emissiveIntensity: 0.35 });
     const m = new THREE.Mesh(segGeo, mat);
-    m.position.set(e.x0, 0.75 + segMeshes.length * 0.03, -e.y0);   // later lines sit a hair higher so overlaps don't flicker
-    m.rotation.y = e.heading * Math.PI / 180;
+    const a = toScene(e.x0, e.y0, e.z0), b = toScene(e.x1, e.y1, e.z1);
+    const lift = e.d3 ? 0 : 0.75 + Math.min(order, 400) * 0.03;
+    m.position.copy(a); m.position.y += lift;
+    const dir = b.clone().sub(a);
+    if (dir.lengthSq() > 0) m.quaternion.setFromUnitVectors(X_UNIT, dir.normalize());
     m.scale.x = 0.001;
+    m.scale.z = (e.size ? Math.max(0.6, Math.sqrt(e.size)) : 1) * (e.d3 ? Math.max(1, labelScale / 16) : 1);   // thicker lines when the 3D scene is large
+    m.scale.y = m.scale.z;
     m.castShadow = true;
-    scene.add(m);
+    drawGroup.add(m);
     return m;
   }
-
-  function setTurtle(x, y, h) {
-    turtle.position.set(x, 0, -y);
-    turtle.rotation.y = h * Math.PI / 180;
+  function makeDot(e, order) {
+    const m = new THREE.Mesh(dotGeo, new THREE.MeshStandardMaterial({ color: safeColor(e.color), roughness: 0.5 }));
+    m.position.copy(toScene(e.x, e.y, e.z)); if (!e.d3) m.position.y += 0.8 + Math.min(order, 400) * 0.03;
+    m.scale.setScalar(e.size);
+    m.castShadow = true;
+    drawGroup.add(m);
+    return m;
   }
-
-  let fit = { cx: 0, cy: 0, ext: 120 };
+  let labelScale = 16, autoSkip = false;
+  function makeLabel(e) {
+    const c = document.createElement('canvas'); c.width = 256; c.height = 96;
+    const g = c.getContext('2d');
+    g.font = 'bold 60px system-ui, sans-serif'; g.textAlign = 'left'; g.textBaseline = 'middle';
+    const col = colorOf(e.color || '#111827');
+    g.fillStyle = 'rgba(255,255,255,.85)'; const w = Math.min(246, g.measureText(e.text).width + 16); g.fillRect(0, 10, w, 76);
+    g.fillStyle = col; g.fillText(e.text, 8, 48, 238);
+    const tex = new THREE.CanvasTexture(c);
+    const sp = new THREE.Sprite(new THREE.SpriteMaterial({ map: tex, transparent: true, depthTest: false }));
+    sp.center.set(0, 0.5);
+    sp.position.copy(toScene(e.x, e.y, e.z)); sp.position.y += e.d3 ? 0 : 2;
+    sp.scale.set(labelScale * 2.67, labelScale, 1);
+    drawGroup.add(sp);
+    return sp;
+  }
+  function setTurtle(x, y, h, z, p) { turtle.position.copy(toScene(x, y, z)); turtle.rotation.y = h * Math.PI / 180; turtle.rotation.z = (p || 0) * Math.PI / 180; }
+  function boundsOf(ev) {
+    let minX = 0, maxX = 0, minY = 0, maxY = 0, minZ = 0, maxZ = 0, any3 = false;
+    for (const e of ev) {
+      if (e.kind === 'move') { minX = Math.min(minX, e.x0, e.x1); maxX = Math.max(maxX, e.x0, e.x1); minY = Math.min(minY, e.y0, e.y1); maxY = Math.max(maxY, e.y0, e.y1); minZ = Math.min(minZ, e.z0 || 0, e.z1 || 0); maxZ = Math.max(maxZ, e.z0 || 0, e.z1 || 0); }
+      else if (e.kind === 'dot' || e.kind === 'write') { minX = Math.min(minX, e.x); maxX = Math.max(maxX, e.x); minY = Math.min(minY, e.y); maxY = Math.max(maxY, e.y); }
+      if (e.d3) any3 = true;
+    }
+    return { minX, maxX, minY, maxY, minZ, maxZ, any3 };
+  }
   function fitCamera(ev, angled) {
     const b = boundsOf(ev);
-    const cx = (b.minX + b.maxX) / 2, cy = (b.minY + b.maxY) / 2;
-    const ext = Math.max(b.maxX - b.minX, b.maxY - b.minY, 100) + 40;
-    fit = { cx, cy, ext };
+    set3DMode(b.any3);
+    const cx = b.any3 ? 0 : (b.minX + b.maxX) / 2, cy = b.any3 ? 0 : (b.minY + b.maxY) / 2;
+    const span = b.any3 ? 2 * Math.max(Math.abs(b.minX), b.maxX, Math.abs(b.minY), b.maxY, Math.abs(b.minZ), b.maxZ) : Math.max(b.maxX - b.minX, b.maxY - b.minY);
+    const ext = Math.max(span, 100) + 40;
+    labelScale = Math.max(14, ext / 22);
     controls.target.set(cx, 0, -cy);
-    if (angled) camera.position.set(cx, ext * 1.15, -cy + ext * 1.05);
-    else camera.position.set(cx, ext * 1.75, -cy + 0.5);
+    if (angled) camera.position.set(cx, ext * 1.4, -cy + ext * 1.25);
+    else camera.position.set(cx, ext * 1.9, -cy + 0.5);
+    camera.far = Math.max(6000, ext * 6);
+    camera.updateProjectionMatrix();
     controls.update();
   }
-
   function resize() {
     const w = wrap.clientWidth, h = wrap.clientHeight;
     renderer.setSize(w, h, false);
@@ -417,116 +1706,190 @@
   new ResizeObserver(resize).observe(wrap);
   resize();
 
-  // ---------------------------------------------------------------- UI
+  // =====================================================================
+  //  UI + ANIMATION ENGINE (shared by both tabs)
+  // =====================================================================
   const $ = id => document.getElementById(id);
-  const codeW = $('codeW'), codeF = $('codeF'), progsEl = $('progs'), legendEl = $('legend');
+  const codeW = $('codeW'), codeF = $('codeF'), progsEl = $('progs');
   const badge = $('badge'), counter = $('counter'), nowEl = $('now'), explain = $('explain'), varsEl = $('vars');
   const btnReset = $('btnReset'), btnStep = $('btnStep'), btnPlay = $('btnPlay'), btnEnd = $('btnEnd');
   const speedEl = $('speed'), speedVal = $('speedVal'), skipCtlEl = $('skipCtl'), veil = $('veil');
+  const codeTA = $('code'), gutter = $('gutter'), backdrop = $('backdrop'), consoleEl = $('console');
 
+  let mode = 'nested';
+  const inExamples = () => mode !== 'code';
   let prog = null, trace = [], totalTurtle = 0, varNames = [];
   let idx = 0, cur = null, progress = 0, playing = false, stepOnce = false, speed = 1;
-  let segMeshes = [], revealed = false;
+  let segMeshes = [], revealed = true;
+  let customTrace = null, engineUsed = 'basic', varsRaw = false;   // varsRaw: values already formatted as text (Pyodide)
 
+  // ---- Python syntax colouring (VS Code-like classes; palettes are in CSS)
+  const PY_KW = new Set(['def', 'class', 'and', 'or', 'not', 'in', 'is', 'lambda', 'True', 'False', 'None', 'global', 'nonlocal', 'yield', 'del', 'assert', 'async', 'await']);
+  const PY_KWC = new Set(['if', 'elif', 'else', 'for', 'while', 'return', 'break', 'continue', 'try', 'except', 'finally', 'raise', 'with', 'pass', 'import', 'from', 'as']);
+  const PY_MOD = new Set(['turtle', 'random', 'math', 'time', 'sys', 'os']);
+  const PY_RE = /(#[^\n]*)|("""[\s\S]*?(?:"""|$)|'''[\s\S]*?(?:'''|$)|[rRbBfFuU]{0,2}"(?:[^"\\\n]|\\.)*"?|[rRbBfFuU]{0,2}'(?:[^'\\\n]|\\.)*'?)|(\d+\.?\d*(?:[eE][-+]?\d+)?j?|\.\d+)|([A-Za-z_]\w*)|(\n)|([ \t]+)|(.)/g;
+  function highlightPython(src) {
+    const lines = ['']; let prevSig = '', prevWord = '';
+    const push = (text, cls) => {
+      const parts = text.split('\n');
+      parts.forEach((pt, i) => {
+        if (i > 0) lines.push('');
+        if (pt) lines[lines.length - 1] += cls ? `<span class="tok-${cls}">${esc(pt)}</span>` : esc(pt);
+      });
+    };
+    PY_RE.lastIndex = 0;
+    let m;
+    while ((m = PY_RE.exec(src)) !== null) {
+      if (m[0] === '') { PY_RE.lastIndex++; continue; }
+      if (m[1] !== undefined) { push(m[1], 'c'); continue; }
+      if (m[2] !== undefined) { push(m[2], 's'); prevSig = 's'; continue; }
+      if (m[3] !== undefined) { push(m[3], 'n'); prevSig = 'n'; continue; }
+      if (m[4] !== undefined) {
+        const w = m[4], rest = src.slice(PY_RE.lastIndex), callNext = /^[ \t]*\(/.test(rest);
+        let cls;
+        if (PY_KWC.has(w)) cls = 'kc';
+        else if (PY_KW.has(w)) cls = 'k';
+        else if (prevWord === 'def' || prevWord === 'class') cls = 'f';
+        else if (prevSig === '.' && callNext) cls = 'f';
+        else if (callNext) cls = 'f';
+        else if (PY_MOD.has(w) && prevSig !== '.') cls = 'm';
+        else cls = 'v';
+        push(w, cls); prevSig = 'w'; prevWord = w; continue;
+      }
+      if (m[5] !== undefined) { push('\n'); prevSig = ''; prevWord = ''; continue; }
+      if (m[6] !== undefined) { push(m[6]); continue; }
+      push(m[7]); prevSig = m[7]; prevWord = '';
+    }
+    return lines;
+  }
   function renderCode(el, lines, tints) {
+    const hl = highlightPython(lines.join('\n'));
     el.innerHTML = lines.map((t, i) => {
       const n = i + 1, cls = tints[n] ? ' ' + tints[n] : '';
-      return `<div class="ln${cls}" data-n="${n}"><span class="n">${n}</span><span class="t">${t.replace(/</g, '&lt;')}</span></div>`;
+      return `<div class="ln${cls}" data-n="${n}"><span class="n">${n}</span><span class="t">${hl[i] || ''}</span></div>`;
     }).join('');
   }
-
   function highlight(e) {
-    for (const d of codeW.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.w);
-    for (const d of codeF.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.f);
+    if (inExamples()) {
+      if (prog && prog.single) {
+        let act = null;
+        for (const d of codeW.querySelectorAll('.ln')) { const on = !!e && +d.dataset.n === e.line; d.classList.toggle('active', on && e.kind !== 'error'); d.classList.toggle('error', on && e.kind === 'error'); if (on) act = d; }
+        if (act) { const pre = codeW; const top = act.offsetTop - pre.offsetTop; if (top < pre.scrollTop || top > pre.scrollTop + pre.clientHeight - 30) pre.scrollTop = Math.max(0, top - pre.clientHeight / 2); }
+        return;
+      }
+      for (const d of codeW.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.w);
+      for (const d of codeF.querySelectorAll('.ln')) d.classList.toggle('active', !!e && +d.dataset.n === e.f);
+    } else {
+      const rows = backdrop.children;
+      for (let i = 0; i < rows.length; i++) {
+        rows[i].classList.toggle('active', !!e && e.kind !== 'error' && i + 1 === e.line);
+        rows[i].classList.toggle('error', !!e && e.kind === 'error' && i + 1 === e.line);
+      }
+      if (e && rows[e.line - 1]) {
+        const top = rows[e.line - 1].offsetTop, lh = rows[e.line - 1].offsetHeight;
+        if (top < codeTA.scrollTop || top + lh > codeTA.scrollTop + codeTA.clientHeight) codeTA.scrollTop = Math.max(0, top - codeTA.clientHeight / 2);
+        syncScroll();
+      }
+    }
   }
-
   function renderVars(vars, changed) {
     varsEl.innerHTML = varNames.map(v => {
       const has = vars && v in vars;
-      return `<span class="var${changed === v ? ' changed' : ''}">${v} = ${has ? vars[v] : '—'}</span>`;
+      const val = !has ? '—' : varsRaw ? vars[v] : fmt(vars[v]);
+      return `<span class="var${changed === v ? ' changed' : ''}">${esc(v)} = ${esc(val)}</span>`;
     }).join('');
   }
-
   function renderLegend() {
-    const outer = varNames[0];
-    const outerLoop = prog.body.find(s => s.type === 'loop');
-    const n = outerLoop.stop - outerLoop.start;
     let html = '';
-    for (let i = 0; i < n; i++) html += `<span class="chip"><i style="background:${colorOf(i)}"></i>${outer} = ${outerLoop.start + i}</span>`;
-    if (prog.nested) html += `<span class="chip"><i style="background:${GREY}"></i>outer loop only</span>`;
-    html += `<span class="chip"><i style="background:var(--tint-outer)"></i>outer loop line</span>`;
-    if (prog.nested) html += `<span class="chip"><i style="background:var(--tint-inner)"></i>inner loop line</span>`;
-    legendEl.innerHTML = html;
+    if (inExamples() && prog.single) {
+      $('legendEx').innerHTML = prog.engine === 'pyodide'
+        ? `<span class="chip"><i style="background:#7c3aed"></i>rotateX / rotateY / rotateZ spin the whole drawing</span><span class="chip">line colour = pencolor()</span>`
+        : `<span class="chip"><i style="background:${GREY}"></i>not in a loop</span><span class="chip"><i style="background:${colorOf(0)}"></i><i style="background:${colorOf(1)}"></i><i style="background:${colorOf(2)}"></i>1st, 2nd, 3rd time round the outer loop</span><span class="chip">(or your own pencolor)</span>`;
+    } else if (inExamples()) {
+      const outer = varNames[0], outerLoop = prog.body.find(s => s.type === 'loop');
+      const n = outerLoop.stop - outerLoop.start;
+      for (let i = 0; i < n; i++) html += `<span class="chip"><i style="background:${colorOf(i)}"></i>${outer} = ${outerLoop.start + i}</span>`;
+      if (prog.nested) html += `<span class="chip"><i style="background:${GREY}"></i>outer loop only</span>`;
+      html += `<span class="chip"><i style="background:var(--tint-outer)"></i>outer loop line</span>`;
+      if (prog.nested) html += `<span class="chip"><i style="background:var(--tint-inner)"></i>inner loop line</span>`;
+      $('legendEx').innerHTML = html;
+    } else {
+      for (let i = 0; i < 4; i++) html += `<span class="chip"><i style="background:${colorOf(i)}"></i>${['1st', '2nd', '3rd', '4th'][i]} time round the outer loop</span>`;
+      html += `<span class="chip"><i style="background:${GREY}"></i>outer loop only / no loop</span><span class="chip">(or your own pencolor)</span>`;
+      $('legendCode').innerHTML = html;
+    }
   }
-
   function describe(e) {
     if (!e) return;
-    badge.style.background = e.kind === 'ctl' ? '#9ca3af' : colorOf(e.color);
-    if (e.kind === 'ctl') {
-      badge.textContent = 'loop bookkeeping';
-      nowEl.textContent = `while line ${e.w}  ·  for line ${e.f}`;
-      explain.innerHTML = `<div><b>while:</b> ${e.wText}</div><div><b>for:</b> ${e.fText}</div>`;
-    } else {
-      const vs = Object.entries(e.vars).map(([k, v]) => `${k} = ${v}`).join(' · ');
-      badge.textContent = vs || 'turtle';
-      nowEl.textContent = e.text;
-      const where = e.depth >= 2 ? 'inside the <b>inner</b> loop' : (prog.nested ? 'in the <b>outer</b> loop (after the inner loop finished)' : 'inside the loop');
-      explain.innerHTML = e.kind === 'forward'
-        ? `Turtle step ${e.n}: draws a line ${e.dist} steps long — this line is ${where}. (while line ${e.w} · for line ${e.f})`
-        : `Turtle step ${e.n}: turns ${e.deg}° anticlockwise, no line drawn — ${where}. (while line ${e.w} · for line ${e.f})`;
-    }
+    badge.style.background = e.kind === 'error' ? '#dc2626' : (e.badgeColor || '#9ca3af');
+    badge.textContent = e.badge || (e.kind === 'ctl' ? 'line' : 'turtle');
+    nowEl.textContent = e.now || '';
+    explain.innerHTML = e.html || '';
     renderVars(e.vars, e.changed);
-    counter.textContent = `turtle step ${lastTurtleStep()} of ${totalTurtle}  ·  line ${idx + 1} of ${trace.length} executed`;
+    counter.textContent = `turtle step ${lastTurtleStep()} of ${totalTurtle}  ·  line ${Math.min(idx + 1, trace.length)} of ${trace.length} executed`;
+    if (e.out !== undefined) consoleLog(e.out, e.input ? 'in' : '');
+    if (e.kind === 'error') consoleLog(`${e.now}: ${e.html.replace(/<[^>]+>/g, '')}`, 'e');
+    if (e.visible !== undefined) turtle.visible = e.visible;
   }
-
   function lastTurtleStep() {
     for (let i = Math.min(idx, trace.length - 1); i >= 0; i--) if (trace[i].n) return trace[i].n;
     return 0;
   }
-
-  function setPlayBtn() { btnPlay.textContent = playing && !stepOnce ? '⏸ Pause' : '▶ Play'; }
-
-  function setControls(enabled) {
-    for (const b of [btnReset, btnStep, btnPlay, btnEnd]) b.disabled = !enabled;
+  function consoleLog(text, cls) {
+    if (consoleEl.dataset.fresh === '1') { consoleEl.innerHTML = ''; consoleEl.dataset.fresh = '0'; }
+    const d = document.createElement('div'); if (cls) d.className = cls; d.textContent = text; consoleEl.appendChild(d);
+    consoleEl.scrollTop = consoleEl.scrollHeight;
   }
+  function consoleReset(msg) { consoleEl.innerHTML = msg ? `<span class="d">${esc(msg)}</span>` : ''; consoleEl.dataset.fresh = '1'; }
+  function setPlayBtn() { btnPlay.textContent = playing && !stepOnce ? '⏸ Pause' : '▶ Play'; }
+  function setControls(enabled) { for (const b of [btnReset, btnStep, btnPlay, btnEnd]) b.disabled = !enabled; }
 
-  // ---------------------------------------------------------------- animation
   function startEvent() {
     cur = trace[idx]; progress = 0;
-    if (cur.kind === 'forward') { cur.mesh = makeSegment(cur); segMeshes.push(cur.mesh); cur.dur = 260 + cur.dist * 9; }
-    else if (cur.kind === 'left') cur.dur = 220 + cur.deg * 3.2;
-    else cur.dur = skipCtlEl.checked ? 0 : 520;
+    if (cur.kind === 'move') {
+      const d = Math.hypot(cur.x1 - cur.x0, cur.y1 - cur.y0);
+      if (cur.pen) { cur.mesh = makeSegment(cur, segMeshes.length); segMeshes.push(cur.mesh); }
+      cur.dur = cur.sub ? 40 + Math.min(d, 400) * 3 : 200 + Math.min(d, 400) * 8;
+    } else if (cur.kind === 'turn') cur.dur = cur.sub ? 30 : 200 + Math.min(Math.abs(cur.h1 - cur.h0) + Math.abs((cur.p1 || 0) - (cur.p0 || 0)), 360) * 3;
+    else if (cur.kind === 'dot') { cur.mesh = makeDot(cur, segMeshes.length); segMeshes.push(cur.mesh); cur.dur = 250; }
+    else if (cur.kind === 'write') { cur.mesh = makeLabel(cur); segMeshes.push(cur.mesh); cur.dur = 250; }
+    else if (cur.kind === 'rot') {
+      const q = new THREE.Quaternion().setFromAxisAngle(AXIS3[cur.axis], cur.deg * Math.PI / 180);
+      pendingRot.premultiply(q);
+      if (cur.redraw) { cur.q0 = drawGroup.quaternion.clone(); cur.q1 = pendingRot.clone().multiply(cur.q0); pendingRot.identity(); cur.dur = 90; }
+      else cur.dur = 0;
+    }
+    else if (cur.kind === 'error') cur.dur = 300;
+    else if (cur.sleep !== undefined) cur.dur = Math.min(cur.sleep * 1000, 2000);
+    else cur.dur = skipCtlEl.checked ? 0 : 480;
     highlight(cur);
     describe(cur);
   }
-
   function applyProgress(e, p) {
-    if (e.kind === 'forward') {
-      const t = p < 1 ? (1 - Math.pow(1 - p, 2)) : 1;
-      e.mesh.scale.x = Math.max(0.001, e.dist * t);
-      setTurtle(e.x0 + (e.x1 - e.x0) * t, e.y0 + (e.y1 - e.y0) * t, e.heading);
-    } else if (e.kind === 'left') {
-      const t = p < 1 ? (1 - Math.pow(1 - p, 2)) : 1;
-      setTurtle(e.x, e.y, e.h0 + (e.h1 - e.h0) * t);
-    }
+    const t = p < 1 ? (1 - Math.pow(1 - p, 2)) : 1;
+    if (e.kind === 'move') {
+      const z0 = e.z0 || 0, z1 = e.z1 || 0;
+      if (e.mesh) e.mesh.scale.x = Math.max(0.001, Math.hypot(e.x1 - e.x0, e.y1 - e.y0, z1 - z0) * t);
+      setTurtle(e.x0 + (e.x1 - e.x0) * t, e.y0 + (e.y1 - e.y0) * t, e.heading, z0 + (z1 - z0) * t, e.pitch);
+    } else if (e.kind === 'turn') setTurtle(e.x, e.y, e.h0 + (e.h1 - e.h0) * t, e.z, (e.p0 || 0) + ((e.p1 || 0) - (e.p0 || 0)) * t);
+    else if (e.kind === 'rot' && e.q1) drawGroup.quaternion.copy(e.q0).slerp(e.q1, t);
   }
-
   function finalize(e) {
-    if (e.kind === 'forward') { e.mesh.material.emissiveIntensity = 0.0; }
-    if (e.kind === 'forward') setTurtle(e.x1, e.y1, e.heading);
-    if (e.kind === 'left') setTurtle(e.x, e.y, e.h1);
+    if (e.kind === 'move') { if (e.mesh) e.mesh.material.emissiveIntensity = 0; setTurtle(e.x1, e.y1, e.heading, e.z1, e.pitch); }
+    if (e.kind === 'turn') setTurtle(e.x, e.y, e.h1, e.z, e.p1);
+    if (e.kind === 'rot' && e.q1) drawGroup.quaternion.copy(e.q1);
   }
-
   function finishedAll() {
     playing = false; stepOnce = false; setPlayBtn();
+    const lastE = trace[trace.length - 1];
+    if (lastE && lastE.kind === 'error') { highlight(lastE); return; }
     highlight(null);
     badge.style.background = '#16a34a';
     badge.textContent = 'done';
     nowEl.textContent = 'Program finished.';
-    explain.innerHTML = `The turtle ran <b>${totalTurtle}</b> turtle commands in total. Press ↺ Reset to watch again, or pick another program.`;
+    explain.innerHTML = `The turtle ran <b>${totalTurtle}</b> turtle commands in total. Press ↺ Reset to watch again${inExamples() ? ', or pick another program' : ', or change the code and Run'}.`;
     counter.textContent = `turtle step ${totalTurtle} of ${totalTurtle}`;
   }
-
   let last = performance.now();
   function animate(now) {
     requestAnimationFrame(animate);
@@ -539,7 +1902,7 @@
         if (progress >= 1) {
           const e = cur; finalize(e); cur = null; idx++;
           if (idx >= trace.length) finishedAll();
-          else if (stepOnce && !(skipCtlEl.checked && e.kind === 'ctl')) { stepOnce = false; playing = false; setPlayBtn(); }
+          else if (stepOnce && !(skipCtlEl.checked && e.kind === 'ctl' && e.sleep === undefined) && !(e.sub && !e.circle_done)) { stepOnce = false; playing = false; setPlayBtn(); }
         }
       }
     }
@@ -548,78 +1911,504 @@
   }
   requestAnimationFrame(animate);
 
-  function reset() {
+  function resetScene() {
     playing = false; stepOnce = false; cur = null; idx = 0; progress = 0;
-    for (const m of segMeshes) { scene.remove(m); m.material.dispose(); }
+    for (const m of segMeshes) { drawGroup.remove(m); if (m.material.map) m.material.map.dispose(); m.material.dispose(); }
     segMeshes = [];
-    setTurtle(0, 0, 0);
+    drawGroup.quaternion.identity(); pendingRot.identity();
+    setTurtle(0, 0, 0, 0, 0);
+    turtle.visible = true;
     highlight(null);
-    badge.style.background = '#9ca3af'; badge.textContent = 'ready';
-    nowEl.textContent = 'Press ▶ Play to run, or ⏭ Step to go one line at a time.';
-    explain.innerHTML = prog.nested
-      ? 'Watch how the <b>inner</b> loop runs all the way through every single time the <b>outer</b> loop goes round once.'
-      : 'Both versions do exactly the same thing. The for line does the START, CHECK and STEP jobs of the while loop by itself.';
     renderVars({}, null);
-    counter.textContent = `turtle step 0 of ${totalTurtle}`;
     setPlayBtn();
   }
-
+  function reset() {
+    cancelInput();
+    resetScene();
+    badge.style.background = '#9ca3af'; badge.textContent = 'ready';
+    if (inExamples() && prog.single) {
+      nowEl.textContent = trace.length ? 'Press ▶ Play to run, or ⏭ Step to go one line at a time.' : 'Loading…';
+      explain.innerHTML = trace.length ? (prog.engine === 'pyodide' ? 'The axes are X (blue), Y (red) and Z (green, out of the page). Drag the 3D view to look around while it spins.' : prog.blurb) : '';
+      if (trace.length) consoleReset('Output from print(), questions from input() and any errors appear here.');
+    } else if (inExamples()) {
+      nowEl.textContent = 'Press ▶ Play to run, or ⏭ Step to go one line at a time.';
+      explain.innerHTML = prog.nested
+        ? 'Watch how the <b>inner</b> loop runs all the way through every single time the <b>outer</b> loop goes round once.'
+        : 'Both versions do exactly the same thing. The for line does the START, CHECK and STEP jobs of the while loop by itself.';
+    } else {
+      nowEl.textContent = trace.length ? 'Press ▶ Play to run, or ⏭ Step to go one line at a time.' : 'Type a program, then press ▶ Run.';
+      explain.innerHTML = trace.length ? 'The turtle starts in the middle of the paper, facing right.' : '';
+      if (trace.length) consoleReset('Output from print(), questions from input() and any errors appear here.');
+    }
+    counter.textContent = `turtle step 0 of ${totalTurtle}`;
+  }
   function runToEnd() {
     if (cur) { applyProgress(cur, 1); finalize(cur); cur = null; idx++; }
     while (idx < trace.length) { startEvent(); applyProgress(cur, 1); finalize(cur); cur = null; idx++; }
     finishedAll();
   }
 
+  // ---- examples tab
+  let selectSerial = 0;
   function selectProgram(p) {
     prog = p;
-    const t = buildTrace(p);
-    trace = t.ev; totalTurtle = t.turtleSteps; varNames = loopVars(p.body);
+    const serial = ++selectSerial;
     for (const b of progsEl.querySelectorAll('button')) b.classList.toggle('on', b.dataset.id === p.id);
+    document.querySelector('.codes').classList.toggle('single', !!p.single);
+    $('codeWttl').textContent = p.single ? (p.engine === 'pyodide' ? 'turtles3D program (full Python)' : 'program') : 'while version';
+    $('exEngine').textContent = p.single ? (p.engine === 'pyodide' ? 'runs on full Python (Pyodide)' : 'runs on the built-in engine') : 'worked example with both loop styles';
+    cancelInput();
+    revealed = !p.exercise;
+    veil.style.display = revealed ? 'none' : 'flex';
+    setControls(revealed);
+    try { history.replaceState(null, '', '#' + p.id); } catch (e) { /* some preview sandboxes forbid this */ }
+    if (p.single) {
+      trace = []; totalTurtle = 0; varNames = []; varsRaw = p.engine === 'pyodide';
+      if (autoSkip && p.engine !== 'pyodide') { skipCtlEl.checked = false; autoSkip = false; }
+      renderCode(codeW, p.source.split('\n'), {});
+      renderLegend();
+      reset();
+      fitCamera(trace, true);
+      runSingleExample(p, serial);
+      return;
+    }
+    varsRaw = false;
+    if (autoSkip) { skipCtlEl.checked = false; autoSkip = false; }
+    const t = buildExampleTrace(p);
+    trace = t.ev; totalTurtle = t.turtleSteps; varNames = loopVars(p.body);
     renderCode(codeW, p.whileCode, p.wTint);
     renderCode(codeF, p.forCode, p.fTint);
     renderLegend();
     reset();
     fitCamera(trace, true);
-    revealed = !p.exercise;
-    veil.style.display = revealed ? 'none' : 'flex';
-    setControls(revealed);
-    location.hash = p.id;
+  }
+  async function runSingleExample(p, serial) {
+    const alive = () => serial === selectSerial && inExamples();
+    explain.innerHTML = p.blurb;
+    let result;
+    if (p.engine === 'pyodide') {
+      badge.style.background = '#f59e0b'; badge.textContent = 'please wait';
+      nowEl.textContent = 'Loading full Python (about 10 MB, first visit only)…';
+      await loadPyodideEngine();
+      if (!alive()) return;
+      if (pyState !== 'ready') {
+        badge.style.background = '#dc2626'; badge.textContent = 'needs full Python';
+        nowEl.textContent = 'Full Python could not be loaded.';
+        explain.innerHTML = 'This example uses functions, lists and the turtles3D library, so it needs the full Python engine (an internet connection to download it). The other examples still work.';
+        return;
+      }
+      try { result = runPyodide(p.source, [], 1); }
+      catch (x) { badge.style.background = '#dc2626'; badge.textContent = 'error'; nowEl.textContent = 'Could not run the example.'; explain.innerHTML = esc(String(x.message || x)); return; }
+    } else {
+      result = await runWithInput(p.source, 'basic', () => alive());
+      if (!result) return;
+    }
+    const d = decorateEvents(result, p.source.split('\n'));
+    trace = d.trace; totalTurtle = d.turtleSteps; varNames = d.varNames;
+    reset();
+    fitCamera(trace, true);
+    if (trace.length > 3000 && !skipCtlEl.checked) { skipCtlEl.checked = true; autoSkip = true; explain.innerHTML += ' <i>(Long program: the start / check / step lines are skipped so the spin runs smoothly — untick the box to see every line.)</i>'; }
+  }
+  function renderProgButtons(tab) {
+    progsEl.innerHTML = '';
+    let lastGroup = null;
+    for (const p of PROGRAMS) {
+      if (p.tab !== tab) continue;
+      if (p.group !== lastGroup) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = p.group; progsEl.appendChild(g); lastGroup = p.group; }
+      const b = document.createElement('button'); b.textContent = p.title; b.dataset.id = p.id;
+      b.addEventListener('click', () => selectProgram(p));
+      progsEl.appendChild(b);
+    }
+  }
+  $('btnOpenInEditor').addEventListener('click', () => {
+    if (!prog) return;
+    const src = prog.single ? prog.source : prog.forCode.join('\n') + '\n';
+    if (codeTA.value.trim() && codeTA.value !== DEFAULT_CODE && codeTA.value !== src && !confirm('Replace the code in the editor with this example?')) return;
+    codeTA.value = src;
+    codeTA.dispatchEvent(new Event('input'));
+    setMode('code');
+    consoleReset(`Loaded "${prog.title}" — change it, then press ▶ Run.`);
+    codeTA.focus();
+  });
+
+  // =====================================================================
+  //  CODE TAB — editor, reference panel, engines, IDLE-style input
+  // =====================================================================
+  const STARTERS = {
+    blank: 'import turtle\n\n',
+    ex1: PROGRAMS[0].forCode.join('\n') + '\n',
+    ex2: PROGRAMS[1].forCode.join('\n') + '\n',
+    ex3: PROGRAMS[2].forCode.join('\n') + '\n',
+    ex2w: PROGRAMS[1].whileCode.join('\n') + '\n',
+    input: "import turtle\n\nsides = int(input('How many sides? '))\nlength = int(input('How long is each side? '))\n\nfor side in range(sides):\n    turtle.forward(length)\n    turtle.left(360 / sides)\n\nprint('Drew a shape with', sides, 'sides')\n",
+    cube3d: EX4_SRC,
+    spiral3d: "from turtles3D import Turtle3D\n\nt = Turtle3D()\nt.pencolor('purple')\nt.yup(25)          # tilt up, so forward() climbs out of the page\n\nfor step in range(48):\n    t.forward(30)\n    t.left(45)\n\n# spin the whole drawing so we can see it is a helix\nfor frame in range(90):\n    t.rotateY(4)\n",
+    func: "import turtle\n\ndef square(size):\n    for side in range(4):\n        turtle.forward(size)\n        turtle.left(90)\n\ncolours = ['red', 'orange', 'green', 'blue']\nfor c in colours:\n    turtle.pencolor(c)\n    square(50)\n    turtle.left(90)\n",
+  };
+  const DEFAULT_CODE = 'import turtle\n\n# Change the numbers, then press Run.\n# Can you turn this into a row of squares?\n\nfor side in range(4):\n    turtle.forward(60)\n    turtle.left(90)\n';
+
+  // ---- reference panel (hover = help + example, click = insert)
+  const REF = [
+    { group: 'Move the turtle', items: [
+      { sig: 'turtle.forward(d)', what: 'Moves forward d steps in the direction it is facing. Draws a line if the pen is down.', ex: 'turtle.forward(50)' },
+      { sig: 'turtle.backward(d)', what: 'Moves backwards d steps without turning around.', ex: 'turtle.backward(30)' },
+      { sig: 'turtle.left(a)', what: 'Turns a degrees anticlockwise. The turtle stays where it is and no line is drawn.', ex: 'turtle.left(90)' },
+      { sig: 'turtle.right(a)', what: 'Turns a degrees clockwise.', ex: 'turtle.right(45)' },
+      { sig: 'turtle.goto(x, y)', what: 'Jumps straight to the point (x, y). The centre is (0, 0); x goes right, y goes up. Draws a line if the pen is down.', ex: 'turtle.goto(100, 50)' },
+      { sig: 'turtle.setheading(a)', what: 'Points the turtle in an exact direction: 0 = right, 90 = up, 180 = left, 270 = down.', ex: 'turtle.setheading(90)' },
+      { sig: 'turtle.home()', what: 'Goes back to the centre and faces right.', ex: 'turtle.home()' },
+    ] },
+    { group: 'Pen', items: [
+      { sig: 'turtle.penup()', what: 'Lifts the pen, so the turtle moves without drawing. Handy for gaps between shapes.', ex: 'turtle.penup()\nturtle.forward(60)\nturtle.pendown()' },
+      { sig: 'turtle.pendown()', what: 'Puts the pen back down so the turtle draws again.', ex: 'turtle.pendown()' },
+      { sig: "turtle.pencolor('red')", what: 'Changes the line colour. Use a colour name in quotes: red, blue, green, orange, purple, black, …', ex: "turtle.pencolor('blue')\nturtle.forward(40)" },
+      { sig: 'turtle.pensize(n)', what: 'Makes the line thicker (n = 1 is thin, 5 is thick).', ex: 'turtle.pensize(4)' },
+      { sig: 'turtle.hideturtle()', what: 'Hides the turtle so only the drawing shows. showturtle() brings it back.', ex: 'turtle.hideturtle()' },
+      { sig: 'turtle.speed(0)', what: 'Sets the drawing speed in IDLE (0 = fastest, 1 = slowest, 6 = normal). This viewer ignores it — use the speed slider instead.', ex: 'turtle.speed(0)' },
+    ] },
+    { group: 'Shapes', items: [
+      { sig: 'turtle.circle(r)', what: 'Draws a circle of radius r. The turtle starts on the edge, so the circle is to its left. circle(r, 180) draws half a circle.', ex: 'turtle.circle(40)' },
+      { sig: 'turtle.dot(size)', what: "Draws a filled dot at the turtle's position.", ex: 'turtle.dot(10)' },
+    ] },
+    { group: 'Loops & choices', items: [
+      { sig: 'for i in range(n):', what: 'Repeats the indented block n times. i counts 0, 1, 2, … up to n − 1. The for line does the start, check and step of a while loop by itself.', ex: 'for side in range(4):\n    turtle.forward(50)\n    turtle.left(90)' },
+      { sig: 'range(start, stop, step)', what: 'range(4) → 0 1 2 3.  range(1, 4) → 1 2 3.  range(0, 10, 2) → 0 2 4 6 8. It always stops BEFORE stop.', ex: 'for size in range(10, 60, 10):\n    turtle.forward(size)\n    turtle.left(90)' },
+      { sig: 'while x < n:', what: 'Keeps repeating the block while the condition is True. Something inside the loop must change x, or it never ends!', ex: 'count = 0\nwhile count < 5:\n    turtle.forward(20)\n    turtle.left(72)\n    count = count + 1' },
+      { sig: 'if / elif / else', what: 'Runs a block only when a condition is True. Compare with <  >  <=  >=  ==  !=', ex: "if side % 2 == 0:\n    turtle.pencolor('red')\nelse:\n    turtle.pencolor('blue')" },
+      { sig: 'break', what: 'Jumps out of the loop straight away.', ex: 'while True:\n    turtle.forward(10)\n    if turtle.xcor() > 100:\n        break' },
+    ] },
+    { group: 'Values', items: [
+      { sig: 'x = 10', what: 'Stores a value in a variable. Use it later by writing its name.', ex: 'length = 40\nturtle.forward(length)' },
+      { sig: 'x = x + 1', what: 'Changes a variable: works out the right-hand side, then stores it. x += 1 is the short way.', ex: 'count = count + 1' },
+      { sig: 'print(a, b)', what: 'Shows values in the output box, separated by spaces.', ex: "print('side', side, 'done')" },
+      { sig: "input('Question? ')", what: 'Asks a question in the output box and waits for you to type an answer. The answer is always text — wrap it in int() to get a whole number.', ex: "n = int(input('How many sides? '))" },
+      { sig: 'int(x)', what: "Turns text like '12' into the whole number 12. float() does decimals.", ex: "size = int(input('Size? '))" },
+      { sig: 'str(x)', what: 'Turns a number into text, so you can join it to other text with +.', ex: "print('Side ' + str(side))" },
+      { sig: 'random.randint(a, b)', what: 'A random whole number from a to b (both included). Put  import random  at the top.', ex: 'import random\nd = random.randint(20, 80)\nturtle.forward(d)' },
+    ] },
+    { group: '3D turtle (turtles3D)', items: [
+      { sig: 'from turtles3D import Turtle3D', what: 'Loads the 3D turtle library. Make a turtle with t = Turtle3D(). It starts at (0, 0, 0) facing along +X. Needs the full Python engine.', ex: 'from turtles3D import Turtle3D\nt = Turtle3D()\nt.forward(80)', adv: true },
+      { sig: 't.goto(x, y, z)', what: 'Jumps to a 3D point. x is right, y is up the page, z comes out of the page. You can also pass a list: t.goto([50, 50, 50]).', ex: 't.goto(50, 50, 50)', adv: true },
+      { sig: 't.yup(a) / t.ydown(a)', what: 'Tilts the turtle up or down by a degrees, so forward() climbs out of the page. left/right still turn in the flat XY plane.', ex: 't.yup(45)\nt.forward(60)', adv: true },
+      { sig: 't.rotateX(a)', what: 'Spins the WHOLE drawing a degrees about the X axis (rotateY and rotateZ do the same about Y and Z). rotateX(a, False) waits to redraw until the next rotate call.', ex: 'for i in range(90):\n    t.rotateX(2, False)\n    t.rotateZ(2)', adv: true },
+      { sig: 't.pos()  /  t.zcor()', what: 'Where the 3D turtle is: pos() gives (x, y, z).', ex: 'start = t.pos()\nt.goto(start)', adv: true },
+    ] },
+    { group: 'Advanced (full Python)', items: [
+      { sig: 'def name(x):', what: 'Makes your own command (a function). Nothing happens until you call it with name(…).', ex: 'def square(size):\n    for side in range(4):\n        turtle.forward(size)\n        turtle.left(90)\n\nsquare(50)\nsquare(80)', adv: true },
+      { sig: "f'Side {side}'", what: 'An f-string: puts values into text using {curly brackets}.', ex: "print(f'Side {side} is {length} long')", adv: true },
+      { sig: "colours = ['red', 'blue']", what: 'A list holds several values. A for loop can go through them one at a time.', ex: "colours = ['red', 'blue', 'green']\nfor c in colours:\n    turtle.pencolor(c)\n    turtle.forward(30)\n    turtle.left(120)", adv: true },
+      { sig: 'turtle.xcor() / ycor()', what: 'Where the turtle is right now (its x or y position). heading() gives the direction.', ex: 'if turtle.xcor() > 200:\n    turtle.home()', adv: true },
+      { sig: 'math.sin(x)', what: 'Maths functions: sqrt, sin, cos, pi … Put  import math  at the top.', ex: 'import math\nturtle.forward(math.sqrt(2) * 50)', adv: true },
+    ] },
+  ];
+  const refEl = $('ref'), tip = $('tip');
+  (function buildRef() {
+    let html = '<div class="cap">Hover for help · click to insert</div>';
+    REF.forEach((g, gi) => {
+      html += `<div class="rh">${esc(g.group)}</div>`;
+      g.items.forEach((it, i) => { html += `<button class="${it.adv ? 'adv' : ''}" data-g="${gi}" data-i="${i}">${esc(it.sig)}</button>`; });
+    });
+    refEl.innerHTML = html;
+    refEl.addEventListener('mouseover', e => { const b = e.target.closest('button'); if (b) showTip(b); });
+    refEl.addEventListener('mouseout', e => { if (e.target.closest('button')) tip.style.display = 'none'; });
+    refEl.addEventListener('focusin', e => { const b = e.target.closest('button'); if (b) showTip(b); });
+    refEl.addEventListener('focusout', () => { tip.style.display = 'none'; });
+    refEl.addEventListener('click', e => { const b = e.target.closest('button'); if (b) insertSnippet(REF[+b.dataset.g].items[+b.dataset.i].ex); });
+  })();
+  function showTip(b) {
+    const it = REF[+b.dataset.g].items[+b.dataset.i];
+    const needsFull = it.adv && !($('engineSel').value !== 'basic' && pyState === 'ready');
+    tip.innerHTML = `<div class="sig">${esc(it.sig)}</div>${esc(it.what)}<pre>${esc(it.ex)}</pre>${needsFull ? '<div class="note">Needs the full Python engine (still loading, or unavailable in basic mode).</div>' : ''}<div class="click">Click to insert this example at the cursor</div>`;
+    tip.style.display = 'block';
+    const r = b.getBoundingClientRect(), tw = 300, th = tip.offsetHeight;
+    let left = r.left - tw - 8; if (left < 8) left = Math.min(window.innerWidth - tw - 8, r.right + 8);
+    let top = r.top; if (top + th > window.innerHeight - 8) top = Math.max(8, window.innerHeight - th - 8);
+    tip.style.left = left + 'px'; tip.style.top = top + 'px';
+  }
+  function insertSnippet(text) {
+    const s = codeTA.selectionStart, v = codeTA.value;
+    const ls = v.lastIndexOf('\n', s - 1) + 1;
+    const indent = (v.slice(ls, s).match(/^ */) || [''])[0];
+    const atLineStart = v.slice(ls, s).trim() === '';
+    const block = text.split('\n').map((ln, i) => (i === 0 ? '' : indent) + ln).join('\n');
+    const ins = (atLineStart ? '' : '\n' + indent) + block + '\n' + indent;
+    codeTA.value = v.slice(0, s) + ins + v.slice(codeTA.selectionEnd);
+    codeTA.selectionStart = codeTA.selectionEnd = s + ins.length;
+    codeTA.dispatchEvent(new Event('input'));
+    codeTA.focus();
   }
 
-  // program buttons
-  let lastGroup = null;
-  for (const p of PROGRAMS) {
-    if (p.group !== lastGroup) { const g = document.createElement('div'); g.className = 'grp'; g.textContent = p.group; progsEl.appendChild(g); lastGroup = p.group; }
-    const b = document.createElement('button'); b.textContent = p.title; b.dataset.id = p.id;
-    b.addEventListener('click', () => selectProgram(p));
-    progsEl.appendChild(b);
+  // ---- editor chrome
+  function refreshEditorChrome() {
+    const hl = highlightPython(codeTA.value);
+    const n = hl.length;
+    let g = ''; for (let i = 1; i <= n; i++) g += i + '\n';
+    gutter.textContent = g;
+    const rows = backdrop.children;
+    const keep = Math.min(rows.length, n);
+    for (let i = 0; i < keep; i++) { const h = hl[i] || '\u200b'; if (rows[i].dataset.h !== h) { rows[i].innerHTML = h; rows[i].dataset.h = h; } }
+    if (rows.length > n) { for (let i = rows.length - 1; i >= n; i--) rows[i].remove(); }
+    else if (rows.length < n) { let h = ''; for (let i = rows.length; i < n; i++) h += `<div data-h="">${hl[i] || '\u200b'}</div>`; backdrop.insertAdjacentHTML('beforeend', h); for (let i = keep; i < n; i++) rows[i].dataset.h = hl[i] || '\u200b'; }
+    syncScroll();
+  }
+  // editor colour theme (VS Code Dark+ by default, Light+ on request)
+  function setTheme(t) {
+    const ed = $('editor');
+    ed.classList.toggle('hl-dark', t === 'dark'); ed.classList.toggle('hl-light', t === 'light');
+    $('btnTheme').textContent = t === 'dark' ? '☀ Light' : '🌙 Dark';
+    try { localStorage.setItem('nlt_theme', t); } catch (e) { /* ignore */ }
+  }
+  $('btnTheme').addEventListener('click', () => setTheme($('editor').classList.contains('hl-dark') ? 'light' : 'dark'));
+  (function () { let t = 'dark'; try { t = localStorage.getItem('nlt_theme') || 'dark'; } catch (e) { /* ignore */ } setTheme(t); })();
+  function syncScroll() { backdrop.scrollTop = codeTA.scrollTop; backdrop.scrollLeft = codeTA.scrollLeft; gutter.scrollTop = codeTA.scrollTop; }
+  codeTA.addEventListener('scroll', syncScroll);
+  codeTA.addEventListener('input', () => {
+    refreshEditorChrome();
+    try { localStorage.setItem('nlt_code', codeTA.value); } catch (e) { /* storage may be unavailable */ }
+    if (mode === 'code' && (customTrace || pendingInput)) invalidateRun();
+  });
+  codeTA.addEventListener('keydown', e => {
+    if (e.key === 'Enter' && (e.ctrlKey || e.metaKey)) { e.preventDefault(); $('btnRun').click(); return; }
+    if (e.key === 'Tab') {
+      e.preventDefault();
+      const s = codeTA.selectionStart, en = codeTA.selectionEnd, v = codeTA.value;
+      if (e.shiftKey) {
+        const ls = v.lastIndexOf('\n', s - 1) + 1;
+        const m = v.slice(ls).match(/^ {1,4}/);
+        if (m) { codeTA.value = v.slice(0, ls) + v.slice(ls + m[0].length); codeTA.selectionStart = codeTA.selectionEnd = Math.max(ls, s - m[0].length); }
+      } else { codeTA.value = v.slice(0, s) + '    ' + v.slice(en); codeTA.selectionStart = codeTA.selectionEnd = s + 4; }
+      codeTA.dispatchEvent(new Event('input'));
+    } else if (e.key === 'Enter') {
+      e.preventDefault();
+      const s = codeTA.selectionStart, v = codeTA.value;
+      const ls = v.lastIndexOf('\n', s - 1) + 1;
+      const lineText = v.slice(ls, s);
+      let ind = (lineText.match(/^ */) || [''])[0];
+      if (/:\s*(#.*)?$/.test(lineText)) ind += '    ';
+      codeTA.value = v.slice(0, s) + '\n' + ind + v.slice(codeTA.selectionEnd);
+      codeTA.selectionStart = codeTA.selectionEnd = s + 1 + ind.length;
+      codeTA.dispatchEvent(new Event('input'));
+    }
+  });
+
+  // ---- engine selection
+  function updateEngineLabel() {
+    const sel = $('engineSel').value;
+    const el = $('engine'), txt = $('engineText');
+    el.className = 'engine';
+    if (sel === 'basic') { el.classList.add('basic'); txt.textContent = 'Engine: basic built-in Python (loops, if, turtle)'; return; }
+    if (pyState === 'ready') { el.classList.add('ok'); txt.textContent = 'Engine: full Python 3 (Pyodide) — functions, lists, f-strings, modules all work'; }
+    else if (pyState === 'loading') { el.classList.add('loading'); txt.textContent = 'Loading full Python (about 10 MB, first visit only)… Run will wait for it.'; }
+    else if (pyState === 'failed') { el.classList.add('basic'); txt.textContent = 'Engine: basic built-in Python (full Python could not be downloaded)'; }
+    else txt.textContent = 'Python: not loaded yet';
+  }
+  $('engineSel').addEventListener('change', () => { updateEngineLabel(); if ($('engineSel').value === 'auto' && pyState === 'idle') loadPyodideEngine(); });
+  skipCtlEl.addEventListener('change', () => { autoSkip = false; });
+
+  function runEngine(src, answers, seed, force) {
+    if (force !== 'basic' && $('engineSel').value !== 'basic' && pyState === 'ready') { engineUsed = 'pyodide'; return runPyodide(src, answers, seed); }
+    engineUsed = 'basic';
+    let ast;
+    try { ast = parseProgram(src); }
+    catch (x) { if (!(x instanceof PyError)) throw x; return { events: [], error: { name: x.kind, msg: x.message, line: x.line }, needInput: null, turtleSteps: 0, varNames: [] }; }
+    return runBasic(ast, answers, seed);
   }
 
+  // ---- IDLE-style input() in the console
+  let pendingInput = null;
+  function renderConsoleFromEvents(events) {
+    consoleEl.innerHTML = ''; consoleEl.dataset.fresh = '0';
+    for (const e of events) if (e.out !== undefined) consoleLog(e.out, e.input ? 'in' : '');
+  }
+  function askInput(prompt) {
+    return new Promise(resolve => {
+      const row = document.createElement('div'); row.className = 'inrow';
+      const p = document.createElement('span'); p.textContent = prompt;
+      const inp = document.createElement('input'); inp.type = 'text'; inp.setAttribute('aria-label', prompt || 'input');
+      row.appendChild(p); row.appendChild(inp); consoleEl.appendChild(row);
+      consoleEl.scrollTop = consoleEl.scrollHeight;
+      pendingInput = { resolve, row };
+      inp.addEventListener('keydown', ev => {
+        if (ev.key === 'Enter') { const v = inp.value; row.remove(); pendingInput = null; resolve(v); }
+        else if (ev.key === 'Escape') cancelInput();
+      });
+      setTimeout(() => inp.focus(), 0);
+    });
+  }
+  function cancelInput() {
+    if (!pendingInput) return;
+    const p = pendingInput; pendingInput = null;
+    p.row.remove(); p.resolve(null);
+  }
+
+  function invalidateRun() {
+    cancelInput();
+    customTrace = null; trace = []; totalTurtle = 0; varNames = [];
+    resetScene();
+    badge.style.background = '#9ca3af'; badge.textContent = 'edited';
+    nowEl.textContent = 'Code changed — press ▶ Run to run the new version.';
+    explain.innerHTML = '';
+    counter.textContent = '';
+  }
+  function showSyntaxError(er) {
+    customTrace = null; trace = []; totalTurtle = 0; varNames = [];
+    resetScene();
+    highlight({ kind: 'error', line: er.line });
+    badge.style.background = '#dc2626'; badge.textContent = 'error';
+    nowEl.textContent = `${er.name} on line ${er.line}`;
+    explain.innerHTML = esc(er.msg);
+    counter.textContent = '';
+    consoleReset(''); consoleLog(`${er.name} on line ${er.line}: ${er.msg}`, 'e');
+  }
+  // Runs a program, pausing at input() to ask in the console (IDLE-style), then re-running with the answers queued.
+  // Returns the engine result, or null if cancelled / superseded. Syntax errors come back as a result with no events.
+  async function runWithInput(src, force, alive) {
+    const answers = [], seed = Math.floor(Math.random() * 1e9);
+    consoleReset('Running…');
+    for (;;) {
+      let result;
+      try { result = runEngine(src, answers, seed, force); }
+      catch (x) { console.error(x); return { events: [], error: { name: 'Error', msg: String(x.message || x), line: 1 }, needInput: null, turtleSteps: 0, varNames: [] }; }
+      if (result.needInput === null || result.needInput === undefined) return result;
+      resetScene();
+      badge.style.background = '#2563eb'; badge.textContent = 'waiting for you';
+      nowEl.textContent = result.needInput || 'input()';
+      explain.innerHTML = 'The program has stopped at <b>input()</b> — type your answer in the Output box and press Enter, just like IDLE.';
+      renderConsoleFromEvents(result.events);
+      const a = await askInput(result.needInput);
+      if (!alive()) return null;
+      if (a === null) { badge.style.background = '#9ca3af'; badge.textContent = 'cancelled'; nowEl.textContent = 'Run cancelled — press ▶ Play to try again.'; explain.innerHTML = ''; return null; }
+      answers.push(a);
+    }
+  }
+  let runSerial = 0;
+  async function runCode(autoplay) {
+    const serial = ++runSerial;
+    cancelInput();
+    if ($('engineSel').value !== 'basic' && pyState === 'loading') {
+      badge.style.background = '#f59e0b'; badge.textContent = 'please wait'; nowEl.textContent = 'Loading full Python…'; explain.innerHTML = 'This only happens on the first visit; the browser keeps a copy afterwards.';
+      await pyPromise;
+      if (serial !== runSerial) return false;
+    }
+    const src = codeTA.value.replace(/\r\n?/g, '\n');
+    const srcLines = src.split('\n');
+    const result = await runWithInput(src, null, () => serial === runSerial && mode === 'code');
+    if (!result) return false;
+    if (result.error && !result.events.length) { showSyntaxError(result.error); return false; }
+    const d = decorateEvents(result, srcLines);
+    customTrace = d; trace = d.trace; totalTurtle = d.turtleSteps; varNames = d.varNames;
+    varsRaw = engineUsed === 'pyodide';
+    renderLegend();
+    reset();
+    consoleReset(trace.length ? 'Running…' : 'Nothing to run — the program is empty.');
+    fitCamera(trace, true);
+    if (!trace.length) return false;
+    if (trace.length > 3000 && !skipCtlEl.checked) { skipCtlEl.checked = true; autoSkip = true; consoleLog('Long program: skipping the start / check / step lines so it plays at a sensible speed (untick the box to see every line).', 'd'); }
+    else if (trace.length <= 3000 && autoSkip) { skipCtlEl.checked = false; autoSkip = false; }
+    if (autoplay) { playing = true; setPlayBtn(); }
+    return true;
+  }
+
+  $('btnRun').addEventListener('click', () => { if (mode !== 'code') setMode('code'); runCode(true); });
+  $('starter').addEventListener('change', e => {
+    const k = e.target.value; e.target.value = '';
+    if (!k) return;
+    if (codeTA.value.trim() && codeTA.value !== DEFAULT_CODE && !confirm('Replace the code in the editor?')) return;
+    codeTA.value = STARTERS[k];
+    codeTA.dispatchEvent(new Event('input'));
+    codeTA.focus();
+  });
+  $('btnSave').addEventListener('click', () => {
+    let name = ($('fname').value || 'my_turtle.py').trim();
+    if (!/\.py$/i.test(name)) name += '.py';
+    try {
+      const blob = new Blob([codeTA.value.replace(/\r?\n/g, '\n')], { type: 'text/x-python' });
+      const a = document.createElement('a');
+      a.href = URL.createObjectURL(blob); a.download = name;
+      document.body.appendChild(a); a.click(); a.remove();
+      setTimeout(() => URL.revokeObjectURL(a.href), 2000);
+      consoleLog(`Saved as ${name} (check your Downloads folder).`, 'd');
+    } catch (e) { consoleLog('Saving is blocked in this preview — open the page from its own address to download.', 'e'); }
+  });
+  $('btnOpen').addEventListener('click', () => $('fileIn').click());
+  $('fileIn').addEventListener('change', e => {
+    const f = e.target.files[0]; if (!f) return;
+    const rd = new FileReader();
+    rd.onload = () => {
+      codeTA.value = String(rd.result).replace(/\r\n?/g, '\n');
+      $('fname').value = f.name;
+      codeTA.dispatchEvent(new Event('input'));
+      consoleReset(`Opened ${f.name} — press ▶ Run.`);
+      if (mode !== 'code') setMode('code');
+    };
+    rd.readAsText(f);
+    e.target.value = '';
+  });
+
+  // ---- tabs
+  function setMode(m) {
+    mode = m;
+    for (const b of document.querySelectorAll('.tabs button')) b.classList.toggle('on', b.dataset.mode === m);
+    $('paneExamples').classList.toggle('on', m !== 'code');
+    $('paneCode').classList.toggle('on', m === 'code');
+    highlight(null);
+    if (m !== 'code') {
+      cancelInput();
+      renderProgButtons(m);
+      const target = (prog && prog.tab === m) ? prog : PROGRAMS.find(p => p.tab === m);
+      selectProgram(target);
+    } else {
+      veil.style.display = 'none';
+      setControls(true);
+      if (customTrace) { trace = customTrace.trace; totalTurtle = customTrace.turtleSteps; varNames = customTrace.varNames; varsRaw = engineUsed === 'pyodide'; }
+      else { trace = []; totalTurtle = 0; varNames = []; }
+      renderLegend();
+      reset();
+      fitCamera(trace, true);
+      refreshEditorChrome();
+      if ($('engineSel').value === 'auto' && pyState === 'idle') loadPyodideEngine();
+      updateEngineLabel();
+    }
+  }
+  for (const b of document.querySelectorAll('.tabs button')) b.addEventListener('click', () => setMode(b.dataset.mode));
+
+  // ---- shared controls
   btnReset.addEventListener('click', reset);
-  btnStep.addEventListener('click', () => {
+  btnStep.addEventListener('click', async () => {
+    if (mode === 'code' && !trace.length) { if (!(await runCode(false))) return; }
     if (idx >= trace.length && !cur) return;
     stepOnce = true; playing = true; setPlayBtn();
   });
   btnPlay.addEventListener('click', () => {
-    if (idx >= trace.length && !cur) { reset(); }
+    if (mode === 'code' && !trace.length) { runCode(true); return; }
+    if (idx >= trace.length && !cur) reset();
     stepOnce = false; playing = !playing; setPlayBtn();
   });
-  btnEnd.addEventListener('click', runToEnd);
+  btnEnd.addEventListener('click', async () => { if (mode === 'code' && !trace.length && !(await runCode(false))) return; runToEnd(); });
   speedEl.addEventListener('input', () => { speed = +speedEl.value; speedVal.textContent = speed + '×'; });
   $('btnAngle').addEventListener('click', () => fitCamera(trace, true));
   $('btnTop').addEventListener('click', () => fitCamera(trace, false));
   $('btnReveal').addEventListener('click', () => { revealed = true; veil.style.display = 'none'; setControls(true); });
 
   document.addEventListener('keydown', e => {
-    if (e.target.tagName === 'INPUT') return;
-    if (!revealed) return;
+    if (e.target.tagName === 'INPUT' || e.target.tagName === 'TEXTAREA' || e.target.tagName === 'SELECT') return;
+    if (!revealed && inExamples()) return;
     if (e.code === 'Space') { e.preventDefault(); btnPlay.click(); }
     else if (e.code === 'ArrowRight') { e.preventDefault(); btnStep.click(); }
     else if (e.key === 'r' || e.key === 'R') reset();
   });
 
-  const start = PROGRAMS.find(p => '#' + p.id === location.hash) || PROGRAMS[0];
-  selectProgram(start);
+  // ---- boot
+  let saved = null;
+  try { saved = localStorage.getItem('nlt_code'); } catch (e) { /* ignore */ }
+  codeTA.value = saved || DEFAULT_CODE;
+  refreshEditorChrome();
+  let hash = '';
+  try { hash = location.hash; } catch (e) { /* ignore */ }
+  const start = PROGRAMS.find(p => '#' + p.id === hash) || PROGRAMS.find(p => p.id === 'ex1');
+  prog = start;
+  if (hash === '#code') { renderProgButtons('nested'); selectProgram(PROGRAMS.find(p => p.id === 'ex1')); setMode('code'); }
+  else setMode(start.tab);
 })();
 </script>
 </body>
